@@ -135,7 +135,7 @@ export default function LoginPage() {
 
         try {
             // Replace with your actual backend login endpoint
-            const response = await axios.post('/api/login', {
+            const response = await axios.post('/api/login/check', {
                 email,
                 password,
             });

@@ -23,25 +23,29 @@ import {
     AccordionSummary,
     AccordionDetails,
     Chip,
-    Fab, // Import Fab for Floating Action Button
-    Dialog, // Import Dialog for the modal
+    Fab,
+    Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
-    IconButton // Import IconButton for closing dialog
+    IconButton,
+    FormControl, // Import FormControl for select
+    InputLabel, // Import InputLabel for select
+    Select, // Import Select for dropdown
+    MenuItem // Import MenuItem for dropdown options
 } from '@mui/material';
-import SchoolIcon from '@mui/icons-material/School'; // Main Training Hub icon
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline'; // Video icon
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline'; // Chatbot icon
-import BookIcon from '@mui/icons-material/Book'; // Application Guide icon
-import LightbulbIcon from '@mui/icons-material/Lightbulb'; // Recommendations icon
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline'; // FAQ icon
-import TrendingUpIcon from '@mui/icons-material/TrendingUp'; // Progress Tracking icon
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; // Accordion expand icon
-import SendIcon from '@mui/icons-material/Send'; // Send message icon
-import CloseIcon from '@mui/icons-material/Close'; // Close icon for modal
+import SchoolIcon from '@mui/icons-material/School';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import BookIcon from '@mui/icons-material/Book';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import SendIcon from '@mui/icons-material/Send';
+import CloseIcon from '@mui/icons-material/Close';
 
-// Define a custom theme for consistency
+// Define a custom theme for consistency (your existing theme)
 const theme = createTheme({
     palette: {
         primary: {
@@ -196,13 +200,17 @@ const theme = createTheme({
     }
 });
 
-// Mock Data
+// Mock Data (your existing data)
 const videoModules = [
-    { id: 'v1', title: 'Excavator: Precision Digging Techniques', machine: 'Excavator', duration: '12 min' },
-    { id: 'v2', title: 'Wheel Loader: Optimal Loading Cycles', machine: 'Wheel Loader', duration: '8 min' },
-    { id: 'v3', title: 'Dozer: Advanced Grading & Leveling', machine: 'Dozer', duration: '15 min' },
-    { id: 'v4', title: 'Safety: Operating in Low Visibility', machine: 'All', duration: '10 min' },
+    { id: 'v1', title: 'Excavator: Precision Digging Techniques', machine: 'Excavator', duration: '12 min', recommendation: 'Fuel Efficiency Best Practices' },
+    { id: 'v2', title: 'Wheel Loader: Optimal Loading Cycles', machine: 'Wheel Loader', duration: '8 min', recommendation: 'Idle Management and Shutdown Policy' },
+    { id: 'v3', title: 'Dozer: Advanced Grading & Leveling', machine: 'Dozer', duration: '15 min', recommendation: 'Working Safely Around Ground Personnel' },
+    { id: 'v4', title: 'Safety: Operating in Low Visibility', machine: 'All', duration: '10 min', recommendation: 'Proper Machine Travel and Braking Techniques' },
     { id: 'v5', title: 'Maintenance: Daily Fluid Checks', machine: 'All', duration: '5 min' },
+    { id: 'v6', title: 'Advanced Fuel Saving Strategies', machine: 'All', duration: '7 min', recommendation: 'Fuel Efficiency Best Practices' },
+    { id: 'v7', title: 'Minimizing Idle Time for Operators', machine: 'All', duration: '9 min', recommendation: 'Idle Management and Shutdown Policy' },
+    { id: 'v8', title: 'Ground Crew Communication & Safety Protocols', machine: 'All', duration: '11 min', recommendation: 'Working Safely Around Ground Personnel' },
+    { id: 'v9', title: 'Smooth Braking and Acceleration Drills', machine: 'All', duration: '13 min', recommendation: 'Proper Machine Travel and Braking Techniques' },
 ];
 
 const faqs = [
@@ -215,8 +223,8 @@ const faqs = [
 // Mock for operator's current context (would come from real data in a full app)
 const mockOperatorContext = {
     currentMachineType: 'Excavator',
-    currentWeather: 'Snowy', // e.g., 'Snowy', 'Rainy', 'Sunny', 'Dusty'
-    currentLocation: 'Mountain Site', // e.g., 'Mountain Site', 'Coastal Area', 'Desert'
+    currentWeather: 'Snowy',
+    currentLocation: 'Mountain Site',
     performanceInsights: {
         excessiveIdling: true,
         unsafeOperationPatterns: false,
@@ -224,18 +232,63 @@ const mockOperatorContext = {
     }
 };
 
+// --- New Data Structure for Alerts and Recommendations ---
+const alertRecommendations = [
+    {
+        trigger: "High Fuel Consumption",
+        inferredNeed: "Understanding fuel-saving techniques.",
+        recommendation: "Fuel Efficiency Best Practices",
+        alertId: "high_fuel_consumption"
+    },
+    {
+        trigger: "Excessive Idling",
+        inferredNeed: "Recognizing and reducing unnecessary idling.",
+        recommendation: "Idle Management and Shutdown Policy",
+        alertId: "excessive_idling"
+    },
+    {
+        trigger: "Repeated Proximity Alerts",
+        inferredNeed: "Improving situational awareness, especially around ground crew.",
+        recommendation: "Working Safely Around Ground Personnel",
+        alertId: "repeated_proximity_alerts"
+    },
+    {
+        trigger: "Frequent Hard Braking Events",
+        inferredNeed: "Smoother driving and better anticipation of stops.",
+        recommendation: "Proper Machine Travel and Braking Techniques",
+        alertId: "frequent_hard_braking"
+    },
+];
+
 export default function TrainingHubPage() {
     const [userMessage, setUserMessage] = useState('');
     const [chatHistory, setChatHistory] = useState([]);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [isChatbotOpen, setIsChatbotOpen] = useState(false); // State to control chatbot modal
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false);
     const chatContainerRef = useRef(null);
 
-    // Contextual training recommendations logic
+    // --- New State for Selected Alert ---
+    const [selectedAlert, setSelectedAlert] = useState(''); // Stores the alertId
+
+    const handleAlertChange = (event) => {
+        setSelectedAlert(event.target.value);
+    };
+
+    // Derived state for the recommended video based on the selected alert
+    const recommendedVideoForAlert = React.useMemo(() => {
+        if (!selectedAlert) return null;
+
+        const alertInfo = alertRecommendations.find(alert => alert.alertId === selectedAlert);
+        if (!alertInfo) return null;
+
+        // Find a video that matches the recommendation
+        return videoModules.find(video => video.recommendation === alertInfo.recommendation);
+    }, [selectedAlert]);
+
+    // Contextual training recommendations logic (your existing logic)
     const personalizedRecommendations = React.useMemo(() => {
         const recommendations = [];
 
-        // Weather-based
         if (mockOperatorContext.currentWeather === 'Snowy') {
             recommendations.push('Operating in Winter Conditions (Video)');
             recommendations.push('Snow Removal Techniques (Simulator)');
@@ -246,7 +299,6 @@ export default function TrainingHubPage() {
             recommendations.push('Visibility in Dusty Conditions (Guide)');
         }
 
-        // Location-specific (mocked)
         if (mockOperatorContext.currentLocation === 'Mountain Site') {
             recommendations.push('Operating on Slopes & Uneven Terrain (Video)');
             recommendations.push('Mountain Site Safety Regulations (Application Guide)');
@@ -254,7 +306,6 @@ export default function TrainingHubPage() {
             recommendations.push('Corrosion Prevention & Saline Environments (Guide)');
         }
 
-        // Performance-based (from mock insights)
         if (mockOperatorContext.performanceInsights.excessiveIdling) {
             recommendations.push('Fuel Efficiency Tips: Reducing Idling (Video)');
         }
@@ -265,14 +316,11 @@ export default function TrainingHubPage() {
             recommendations.push('Optimizing Fuel Consumption (Video)');
         }
 
-        // Machine-specific general training
         recommendations.push(`${mockOperatorContext.currentMachineType} Controls & Basics (Video)`);
         recommendations.push(`${mockOperatorContext.currentMachineType} Daily Inspection (Application Guide)`);
 
-        // Filter out duplicates and return a unique set
         return [...new Set(recommendations)];
     }, [mockOperatorContext]);
-
 
     // Scroll to bottom of chat
     useEffect(() => {
@@ -291,7 +339,7 @@ export default function TrainingHubPage() {
         setIsGenerating(true);
 
         try {
-            const prompt = chatHistory.map(msg => msg.parts[0].text).join('\n') + '\nUser: ' + userMessage; // Simple prompt concatenation
+            const prompt = chatHistory.map(msg => msg.parts[0].text).join('\n') + '\nUser: ' + userMessage;
 
             const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
             const apiKey = ""; // Canvas will provide this API key at runtime
@@ -357,6 +405,64 @@ export default function TrainingHubPage() {
                             Operator Training Hub
                         </Typography>
                     </Box>
+
+                    {/* --- New Section for Alerts and Recommendations Dropdown --- */}
+                    <Box sx={{ mb: 4 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <LightbulbIcon sx={{ fontSize: 32, color: 'info.main', mr: 1.5 }} />
+                            <Typography variant="h5">Alert-Based Recommendations</Typography>
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            Select an operational alert to see relevant training recommendations:
+                        </Typography>
+                        <FormControl fullWidth sx={{ mb: 3 }}>
+                            <InputLabel id="alert-select-label">Select Alert Type</InputLabel>
+                            <Select
+                                labelId="alert-select-label"
+                                id="alert-select"
+                                value={selectedAlert}
+                                label="Select Alert Type"
+                                onChange={handleAlertChange}
+                            >
+                                <MenuItem value="">
+                                    <em>None</em>
+                                </MenuItem>
+                                {alertRecommendations.map((alert) => (
+                                    <MenuItem key={alert.alertId} value={alert.alertId}>
+                                        {alert.trigger}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+
+                        {recommendedVideoForAlert && (
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                                <Typography variant="body1" fontWeight="bold">
+                                    Recommended Training for "{alertRecommendations.find(a => a.alertId === selectedAlert)?.trigger}":
+                                </Typography>
+                                <Typography variant="body2">
+                                    Inferred Need: {alertRecommendations.find(a => a.alertId === selectedAlert)?.inferredNeed}
+                                </Typography>
+                                <Paper variant="outlined" sx={{ p: 2, mt: 1.5, display: 'flex', alignItems: 'center', gap: 2, bgcolor: 'background.paper' }}>
+                                    <PlayCircleOutlineIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+                                    <Box>
+                                        <Typography variant="body1" fontWeight="bold">{recommendedVideoForAlert.title}</Typography>
+                                        <Typography variant="body2" color="text.secondary">Machine: {recommendedVideoForAlert.machine} | Duration: {recommendedVideoForAlert.duration}</Typography>
+                                        <Button
+                                            variant="contained"
+                                            size="small"
+                                            sx={{ mt: 1 }}
+                                            onClick={() => alert(`Playing recommended video: ${recommendedVideoForAlert.title}`)}
+                                        >
+                                            Watch Now
+                                        </Button>
+                                    </Box>
+                                </Paper>
+                            </Alert>
+                        )}
+                    </Box>
+
+                    <Divider sx={{ my: 4 }} />
 
                     {/* Personalized Training Recommendations */}
                     <Box sx={{ mb: 4 }}>
@@ -452,7 +558,7 @@ export default function TrainingHubPage() {
 
                     {/* Placeholder for Instructor Booking / Simulation Module */}
                     <Box sx={{ mb: 4 }}>
-                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                             <SchoolIcon sx={{ fontSize: 32, color: 'secondary.main', mr: 1.5 }} />
                             <Typography variant="h5">Instructor Booking / Simulation Module</Typography>
                         </Box>
@@ -464,8 +570,8 @@ export default function TrainingHubPage() {
                             <Button variant="outlined" onClick={() => alert('Launching Simulation Module.')}>Launch Simulation</Button>
                         </Paper>
                     </Box>
-                    
-                    <Divider sx={{ my: 4 }} /> {/* Divider before FAQs */}
+
+                    <Divider sx={{ my: 4 }} />
 
                     {/* FAQs */}
                     <Box sx={{ mb: 4 }}>
@@ -494,102 +600,102 @@ export default function TrainingHubPage() {
                     </Box>
 
                 </Paper>
-            </Container>
-            {/* Floating Action Button for Chatbot */}
-            <Fab
-                color="primary"
-                aria-label="chatbot"
-                sx={{ position: 'fixed', bottom: 32, right: 32 }}
-                onClick={() => setIsChatbotOpen(true)}
-            >
-                <ChatBubbleOutlineIcon />
-            </Fab>
+                {/* Floating Action Button for Chatbot */}
+                <Fab
+                    color="primary"
+                    aria-label="chatbot"
+                    sx={{ position: 'fixed', bottom: 32, right: 32 }}
+                    onClick={() => setIsChatbotOpen(true)}
+                >
+                    <ChatBubbleOutlineIcon />
+                </Fab>
 
-            {/* Chatbot Dialog/Modal */}
-            <Dialog
-                open={isChatbotOpen}
-                onClose={() => setIsChatbotOpen(false)}
-                maxWidth="sm"
-                fullWidth
-                PaperProps={{ sx: { borderRadius: 3 } }}
-            >
-                <DialogTitle sx={{ m: 0, p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
-                    AI Assistant Chatbot
-                    <IconButton
-                        aria-label="close"
-                        onClick={() => setIsChatbotOpen(false)}
-                        sx={{
-                            position: 'absolute',
-                            right: 8,
-                            top: 8,
-                            color: 'primary.contrastText',
-                        }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent dividers sx={{ p: 0 }}>
-                    <Box ref={chatContainerRef} sx={{ height: 400, display: 'flex', flexDirection: 'column', p: 2, overflowY: 'auto', bgcolor: 'background.default' }}>
-                        {chatHistory.length === 0 && (
-                            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mt: 2 }}>
-                                Ask me anything about machine operation, safety, or training!
-                            </Typography>
-                        )}
-                        {chatHistory.map((msg, index) => (
-                            <Box key={index} sx={{
-                                display: 'flex',
-                                justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                                mb: 1
-                            }}>
-                                <Paper
-                                    variant="outlined"
-                                    sx={{
-                                        p: 1.5,
-                                        maxWidth: '70%',
-                                        bgcolor: msg.role === 'user' ? 'primary.light' : 'background.paper',
-                                        color: msg.role === 'user' ? 'primary.contrastText' : 'text.primary',
-                                        borderRadius: msg.role === 'user' ? '15px 15px 0 15px' : '15px 15px 15px 0',
-                                        boxShadow: msg.role === 'user' ? '0px 2px 5px rgba(0,0,0,0.1)' : 'none',
-                                        border: msg.role === 'user' ? 'none' : '1px solid #E0E0E0'
-                                    }}
-                                >
-                                    <Typography variant="body2">{msg.parts[0].text}</Typography>
-                                </Paper>
-                            </Box>
-                        ))}
-                        {isGenerating && (
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1 }}>
-                                <Paper variant="outlined" sx={{ p: 1.5, maxWidth: '70%', bgcolor: 'background.paper', borderRadius: '15px 15px 15px 0' }}>
-                                    <CircularProgress size={20} />
-                                    <Typography variant="body2" sx={{ ml: 1, display: 'inline' }}>Thinking...</Typography>
-                                </Paper>
-                            </Box>
-                        )}
-                    </Box>
-                </DialogContent>
-                <DialogActions sx={{ p: 2, borderTop: '1px solid #E0E0E0' }}>
-                    <Box component="form" onSubmit={handleSendMessage} sx={{ display: 'flex', gap: 1, width: '100%' }}>
-                        <TextField
-                            fullWidth
-                            variant="outlined"
-                            placeholder="Type your message..."
-                            value={userMessage}
-                            onChange={(e) => setUserMessage(e.target.value)}
-                            disabled={isGenerating}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 25 } }}
-                        />
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            endIcon={<SendIcon />}
-                            disabled={isGenerating || !userMessage.trim()}
-                            sx={{ borderRadius: 25, px: 3 }}
+                {/* Chatbot Dialog/Modal */}
+                <Dialog
+                    open={isChatbotOpen}
+                    onClose={() => setIsChatbotOpen(false)}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{ sx: { borderRadius: 3 } }}
+                >
+                    <DialogTitle sx={{ m: 0, p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                        AI Assistant Chatbot
+                        <IconButton
+                            aria-label="close"
+                            onClick={() => setIsChatbotOpen(false)}
+                            sx={{
+                                position: 'absolute',
+                                right: 8,
+                                top: 8,
+                                color: 'primary.contrastText',
+                            }}
                         >
-                            Send
-                        </Button>
-                    </Box>
-                </DialogActions>
-            </Dialog>
+                            <CloseIcon />
+                        </IconButton>
+                    </DialogTitle>
+                    <DialogContent dividers sx={{ p: 0 }}>
+                        <Box ref={chatContainerRef} sx={{ height: 400, display: 'flex', flexDirection: 'column', p: 2, overflowY: 'auto', bgcolor: 'background.default' }}>
+                            {chatHistory.length === 0 && (
+                                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mt: 2 }}>
+                                    Ask me anything about machine operation, safety, or training!
+                                </Typography>
+                            )}
+                            {chatHistory.map((msg, index) => (
+                                <Box key={index} sx={{
+                                    display: 'flex',
+                                    justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                                    mb: 1
+                                }}>
+                                    <Paper
+                                        variant="outlined"
+                                        sx={{
+                                            p: 1.5,
+                                            maxWidth: '70%',
+                                            bgcolor: msg.role === 'user' ? 'primary.light' : 'background.paper',
+                                            color: msg.role === 'user' ? 'primary.contrastText' : 'text.primary',
+                                            borderRadius: msg.role === 'user' ? '15px 15px 0 15px' : '15px 15px 15px 0',
+                                            boxShadow: msg.role === 'user' ? '0px 2px 5px rgba(0,0,0,0.1)' : 'none',
+                                            border: msg.role === 'user' ? 'none' : '1px solid #E0E0E0'
+                                        }}
+                                    >
+                                        <Typography variant="body2">{msg.parts[0].text}</Typography>
+                                    </Paper>
+                                </Box>
+                            ))}
+                            {isGenerating && (
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1 }}>
+                                    <Paper variant="outlined" sx={{ p: 1.5, maxWidth: '70%', bgcolor: 'background.paper', borderRadius: '15px 15px 15px 0' }}>
+                                        <CircularProgress size={20} />
+                                        <Typography variant="body2" sx={{ ml: 1, display: 'inline' }}>Thinking...</Typography>
+                                    </Paper>
+                                </Box>
+                            )}
+                        </Box>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 2, borderTop: '1px solid #E0E0E0' }}>
+                        <Box component="form" onSubmit={handleSendMessage} sx={{ display: 'flex', gap: 1, width: '100%' }}>
+                            <TextField
+                                fullWidth
+                                variant="outlined"
+                                placeholder="Type your message..."
+                                value={userMessage}
+                                onChange={(e) => setUserMessage(e.target.value)}
+                                disabled={isGenerating}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 25 } }}
+                            />
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                endIcon={<SendIcon />}
+                                disabled={isGenerating || !userMessage.trim()}
+                                sx={{ borderRadius: 25, px: 3 }}
+                            >
+                                Send
+                            </Button>
+                        </Box>
+                    </DialogActions>
+                </Dialog>
+            </Container>
         </ThemeProvider>
     );
 }
