@@ -9,7 +9,7 @@ export enum Weather {
   STORMY = "Stormy",
 }
 
-// Create the Mongoose schema
+
 const ActivitySchema = new Schema(
   {
     operatorId: {
@@ -21,7 +21,8 @@ const ActivitySchema = new Schema(
       required: true,
     },
     taskId: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: "Task", // Reference to Task model
       required: true,
     },
     weather: {
@@ -35,7 +36,5 @@ const ActivitySchema = new Schema(
   }
 );
 
-// Avoid model overwrite on hot reload in dev
 const Activity = models.Activity || model("Activity", ActivitySchema);
-
 export default Activity;
