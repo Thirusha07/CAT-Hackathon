@@ -1,628 +1,377 @@
-"use client"; // This component uses client-side hooks and interactivity
+"use client"; // This component uses client-side hooks and interactivity 
 
-import React, { useState, useEffect } from 'react';
-import {
-    Container,
-    Box,
-    Typography,
-    Paper,
-    Divider,
-    Button,
-    CircularProgress,
-    Alert,
-    createTheme,
-    ThemeProvider,
-    CssBaseline,
-    Grid, // Using Grid for the dashboard layout
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, // For route optimization table
-    Dialog, DialogTitle, DialogContent, DialogActions, IconButton // For modals
-} from '@mui/material';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CloudIcon from '@mui/icons-material/Cloud'; // Weather icon
-import LocationOnIcon from '@mui/icons-material/LocationOn'; // Location icon
-import AltRouteIcon from '@mui/icons-material/AltRoute'; // Route icon
-import CloseIcon from '@mui/icons-material/Close'; // Close icon for modal
-import WarningIcon from '@mui/icons-material/Warning'; // Warning icon
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'; // Success icon
+import React, { useState } from 'react';
+import { ChevronsRight, Shovel, Shield, Fuel, Bell, Settings, Calendar, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 
-// Define a custom theme for consistency
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#FFC72C', // Caterpillar Yellow
-            light: '#FFD966',
-            dark: '#E0B000',
-            contrastText: '#1A1A1A',
-        },
-        secondary: {
-            main: '#4A4A4A',
-            light: '#666666',
-            dark: '#333333',
-            contrastText: '#FFFFFF',
-        },
-        background: {
-            default: '#F0F2F5',
-            paper: '#FFFFFF',
-        },
-        text: {
-            primary: '#1A1A1A',
-            secondary: '#555555',
-        },
-        error: {
-            main: '#D32F2F',
-        },
-        success: {
-            main: '#4CAF50', // Green for success
-        },
-        warning: {
-            main: '#FF9800', // Orange for warnings
-        },
-        info: {
-            main: '#2196F3',
-        },
-    },
-    typography: {
-        fontFamily: 'Inter, sans-serif',
-        h4: {
-            fontWeight: 700,
-            color: '#1A1A1A',
-        },
-        h5: {
-            fontWeight: 600,
-            color: '#1A1A1A',
-            marginBottom: '16px',
-        },
-        h6: {
-            fontWeight: 600,
-            color: '#1A1A1A',
-            marginBottom: '12px',
-        },
-        body1: {
-            color: '#333333',
-        },
-        body2: {
-            color: '#555555',
-        }
-    },
-    components: {
-        MuiPaper: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 12,
-                    boxShadow: '0px 8px 25px rgba(0, 0, 0, 0.08)',
-                },
-            },
-        },
-        MuiAlert: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 8,
-                    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-                },
-            },
-        },
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 10,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                    '&:active': {
-                        transform: 'scale(0.98)',
-                    },
-                },
-            },
-        },
-    }
-});
-
-// Helper function to calculate distance between two points (mock)
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of Earth in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return (R * c).toFixed(2); // Distance in km
+// Mock Data - In a real application, this would come from an API
+const operator = {
+  name: 'Dave',
 };
 
-export default function DashboardPage() {
-    const [loading, setLoading] = useState(true);
-    const [currentSymptoms, setCurrentSymptoms] = useState([]); // Operator Health
-    const [medicationList, setMedicationList] = useState(''); // Operator Health
-    const [preExistingConditions, setPreExistingConditions] = useState(''); // Operator Health
+const dailyTasks = [
+  {
+    id: 1,
+    title: 'Site Prep - Zone A',
+    description: 'Excavate and level the northern section for foundation pouring.',
+    status: 'In Progress',
+    time: '08:00 - 12:00',
+  },
+  {
+    id: 2,
+    title: 'Trenching for Utilities',
+    description: 'Dig a 5-foot trench along the marked utility line.',
+    status: 'Pending',
+    time: '13:00 - 15:00',
+  },
+  {
+    id: 3,
+    title: 'Load Haul Trucks',
+    description: 'Load excavated material onto haul trucks 5 and 6.',
+    status: 'Pending',
+    time: '15:00 - 16:30',
+  },
+    {
+    id: 4,
+    title: 'Pre-Operation Checklist',
+    description: 'Complete the mandatory daily safety inspection.',
+    status: 'Completed',
+    time: '07:45 - 08:00',
+  },
+];
 
-    // Mock real-time biometric/environmental data
-    const [heartRate, setHeartRate] = useState(75);
-    const [bodyTemp, setBodyTemp] = useState(36.8);
-    const [cabinTemp, setCabinTemp] = useState(23.2);
-    const [cabinHumidity, setCabinHumidity] = useState(49);
-    const [cabinCO2, setCabinCO2] = useState(484); // ppm
+const machineHealthData = {
+  fuelLevel: 82,
+  engineHours: 4521.5,
+  defLevel: 75,
+  hydraulicTemp: 68, // in Celsius
+  engineTemp: 85, // in Celsius
+  nextService: 'In 48 hours',
+  faults: [
+    { code: 'E361', description: 'High Engine Temperature', severity: 'warning' },
+    { code: 'F782', description: 'Low DEF Level', severity: 'info' },
+  ],
+};
 
-    // Mock Dashboard Data
-    const [scheduledTasks, setScheduledTasks] = useState([
-        { id: 1, title: 'Excavation for Foundation', time: '08:00 AM - 12:00 PM', status: 'On Track', location: 'Site A, Zone 3' },
-        { id: 2, title: 'Material Hauling', time: '01:00 PM - 03:00 PM', status: 'Scheduled', location: 'Site A to Stockpile B' },
-        { id: 3, title: 'Equipment Inspection', time: '03:30 PM - 04:00 PM', status: 'Scheduled', location: 'Maintenance Bay' },
-    ]);
+const safetyChecklistItems = [
+  { id: 'fluids', text: 'Check fluid levels (oil, coolant, hydraulic)', checked: true },
+  { id: 'tracks', text: 'Inspect tracks/tires for wear and damage', checked: true },
+  { id: 'leaks', text: 'Check for any visible fluid leaks', checked: true },
+  { id: 'cab', text: 'Ensure cab is clean and free of debris', checked: true },
+  { id: 'controls', text: 'Verify all controls and gauges are functional', checked: false },
+  { id: 'horn', text: 'Test horn and backup alarm', checked: false },
+  { id: 'attachments', text: 'Inspect bucket/attachments for security', checked: false },
+];
 
-    const [machineMetrics, setMachineMetrics] = useState({
-        engineHours: 1526.5,
-        fuelUsed: 55, // Liters
-        loadCycles: 15,
-        idlingPercentage: 10,
-        safetyAlertsTriggered: 2,
-    });
 
-    // New states for dashboard enhancements
-    const [weatherForecast, setWeatherForecast] = useState(null);
-    const [taskAllocationSuggestion, setTaskAllocationSuggestion] = useState(null);
-    const [routeOptimizationSuggestion, setRouteOptimizationSuggestion] = useState(null);
-    const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
-    const [isTaskAllocationModalOpen, setIsTaskAllocationModalOpen] = useState(false);
-    const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
+// Main Application Component
+export default function App() {
+  const [activeView, setActiveView] = useState('dashboard');
 
-    useEffect(() => {
-        // Simulate real-time health data updates
-        const healthInterval = setInterval(() => {
-            setHeartRate(Math.floor(Math.random() * (90 - 60 + 1)) + 60);
-            setBodyTemp(parseFloat((36.5 + Math.random() * 1).toFixed(1)));
-            setCabinTemp(parseFloat((20 + Math.random() * 5).toFixed(1)));
-            setCabinHumidity(Math.floor(Math.random() * (70 - 40 + 1)) + 40);
-            setCabinCO2(Math.floor(Math.random() * (800 - 400 + 1)) + 400);
-        }, 3000); // Update every 3 seconds
+  const renderView = () => {
+    switch (activeView) {
+      case 'dashboard':
+        return <Dashboard setActiveView={setActiveView} />;
+      case 'health':
+        return <MachineHealth />;
+      case 'safety':
+        return <SafetyChecklist />;
+      default:
+        return <Dashboard setActiveView={setActiveView} />;
+    }
+  };
 
-        // Simulate machine metrics updates
-        const machineMetricsInterval = setInterval(() => {
-            setMachineMetrics(prev => ({
-                ...prev,
-                engineHours: parseFloat((prev.engineHours + 0.1).toFixed(1)),
-                fuelUsed: parseFloat((prev.fuelUsed + Math.random() * 0.5).toFixed(1)),
-                loadCycles: prev.loadCycles + Math.floor(Math.random() * 2),
-                idlingPercentage: parseFloat((Math.random() * 15).toFixed(1)),
-                safetyAlertsTriggered: prev.safetyAlertsTriggered + (Math.random() < 0.05 ? 1 : 0) // Small chance of new alert
-            }));
-        }, 5000); // Update every 5 seconds
+  return (
+    <div className="bg-gray-800 text-white font-sans flex w-full h-screen">
+      <Sidebar activeView={activeView} setActiveView={setActiveView} />
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto bg-gray-100">
+        {renderView()}
+      </main>
+    </div>
+  );
+}
 
-        // Simulate fetching weather data (e.g., from a weather API)
-        const fetchWeather = () => {
-            // Mock severe weather for demonstration
-            const mockSevereWeather = {
-                date: 'Today',
-                conditions: 'Heavy Rain',
-                temperature: '18°C',
-                windSpeed: '40 km/h',
-                warnings: ['Flash Flood Advisory', 'Reduced Visibility', 'High Wind Warning'],
-                impact: 'Severe impact on outdoor excavation and hauling tasks. Consider rescheduling.'
-            };
-            // Or mock clear weather:
-            // const mockClearWeather = {
-            //     date: 'Today',
-            //     conditions: 'Clear Sky',
-            //     temperature: '25°C',
-            //     windSpeed: '10 km/h',
-            //     warnings: [],
-            //     impact: 'Optimal conditions for all tasks.'
-            // };
-            setWeatherForecast(mockSevereWeather);
-        };
+// 1. Sidebar Navigation Component
+const Sidebar = ({ activeView, setActiveView }) => {
+  const navItems = [
+    { id: 'dashboard', icon: Shovel, label: 'Dashboard' },
+    { id: 'health', icon: Fuel, label: 'Machine Health' },
+    { id: 'safety', icon: Shield, label: 'Safety Checklist' },
+    { id: 'alerts', icon: Bell, label: 'Alerts' },
+    { id: 'settings', icon: Settings, label: 'Settings' },
+  ];
 
-        // Simulate task allocation suggestion
-        const fetchTaskAllocation = () => {
-            const currentMachineLocation = { lat: 34.0522, lon: -118.2437, id: 'EXC001' };
-            const newTask = { id: 'T004', name: 'Emergency Debris Removal', location: 'Downtown Area', lat: 34.0580, lon: -118.2550 };
-            const otherMachines = [
-                { id: 'LD002', lat: 34.0600, lon: -118.2500, status: 'Idle', type: 'Wheel Loader' },
-                { id: 'TRK003', lat: 34.0400, lon: -118.2300, status: 'Operating', type: 'Dump Truck' },
-                { id: 'EXC005', lat: 34.0500, lon: -118.2450, status: 'Idle', type: 'Excavator' } // Closer excavator
-            ];
+  return (
+    <nav className="bg-black p-4 flex flex-col justify-between shadow-lg w-24">
+      <div>
+        {/* CAT Logo Placeholder */}
+        <div className="bg-yellow-400 w-16 h-16 flex items-center justify-center rounded-lg mb-10">
+          <p className="text-black font-bold text-4xl">CAT</p>
+        </div>
+        
+        {/* Navigation Items */}
+        <ul className="space-y-6">
+          {navItems.map((item) => (
+            <li key={item.id}>
+              <button
+                onClick={() => setActiveView(item.id)}
+                className={`flex flex-col items-center justify-center w-full p-2 rounded-lg transition-colors duration-200 ${
+                  activeView === item.id
+                    ? 'bg-yellow-400 text-black'
+                    : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                }`}
+                title={item.label}
+              >
+                <item.icon size={28} />
+                <span className="text-xs mt-1">{item.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      
+      {/* User/Logout section */}
+      <div className="flex flex-col items-center">
+         <img 
+            src={`https://placehold.co/100x100/222/FFF?text=${operator.name.charAt(0)}`}
+            alt="Operator"
+            className="w-12 h-12 rounded-full border-2 border-gray-600"
+          />
+          <span className="text-sm mt-2 text-gray-300">{operator.name}</span>
+      </div>
+    </nav>
+  );
+};
 
-            const distances = otherMachines.map(machine => ({
-                id: machine.id,
-                type: machine.type,
-                status: machine.status,
-                distance: calculateDistance(newTask.lat, newTask.lon, machine.lat, machine.lon)
-            })).sort((a, b) => a.distance - b.distance);
+// 2. Dashboard View Component
+const Dashboard = ({ setActiveView }) => {
+  const getStatusChip = (status) => {
+    switch (status) {
+      case 'Completed':
+        return <span className="flex items-center text-xs font-semibold bg-green-500/20 text-green-400 px-2 py-1 rounded-full"><CheckCircle size={14} className="mr-1"/>{status}</span>;
+      case 'In Progress':
+        return <span className="flex items-center text-xs font-semibold bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full"><ChevronsRight size={14} className="mr-1"/>{status}</span>;
+      case 'Pending':
+        return <span className="flex items-center text-xs font-semibold bg-gray-500/20 text-gray-400 px-2 py-1 rounded-full"><Calendar size={14} className="mr-1"/>{status}</span>;
+      default:
+        return null;
+    }
+  };
 
-            setTaskAllocationSuggestion({
-                newTask: newTask,
-                optimalMachine: distances[0], // Closest machine
-                otherNearby: distances.slice(1)
-            });
-        };
+  return (
+    <div className="text-gray-800">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-4xl font-bold text-black">Good Morning, {operator.name}</h1>
+        <p className="text-gray-500">
+          {new Date().toLocaleDateString(undefined, {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </p>
+      </div>
 
-        // Simulate route optimization
-        const fetchRouteOptimization = () => {
-            const origin = 'Site A';
-            const destination = 'Stockpile B';
-            const routes = [
-                { id: 1, name: 'Main Highway Route', duration: '30 min', congestion: 'Heavy', alternative: false },
-                { id: 2, name: 'Local Roads Bypass', duration: '20 min', congestion: 'Light', alternative: true }
-            ];
-            setRouteOptimizationSuggestion({ origin, destination, routes });
-        };
+      {/* Quick Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <StatCard title="Fuel Level" value={`${machineHealthData.fuelLevel}%`} icon={Fuel} color="green" />
+        <StatCard title="Engine Hours" value={machineHealthData.engineHours.toString()} icon={Settings} color="blue" />
+        <StatCard title="Active Faults" value={machineHealthData.faults.length.toString()} icon={AlertTriangle} color="red" action={() => setActiveView('health')} />
+      </div>
 
-        fetchWeather();
-        fetchTaskAllocation();
-        fetchRouteOptimization();
+      {/* Daily Tasks List */}
+      <div>
+        <h2 className="text-2xl font-bold text-black mb-4">Today's Tasks</h2>
+        <div className="space-y-4">
+          {dailyTasks.map((task) => (
+            <div key={task.id} className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-bold text-lg text-black">{task.title}</h3>
+                  <p className="text-gray-500 text-sm">{task.description}</p>
+                  <p className="text-yellow-600 font-semibold text-sm mt-1">⏰ {task.time}</p>
+                </div>
+                {getStatusChip(task.status)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
-        setLoading(false);
-
-        return () => {
-            clearInterval(healthInterval);
-            clearInterval(machineMetricsInterval);
-        };
-    }, []);
-
-    const handleSymptomChange = (event) => {
-        const { value, checked } = event.target;
-        setCurrentSymptoms((prev) =>
-            checked ? [...prev, value] : prev.filter((symptom) => symptom !== value)
-        );
+// Reusable Stat Card Component
+const StatCard = ({ title, value, icon: Icon, color, action }) => {
+    const colorClasses = {
+        green: 'from-green-500 to-green-600',
+        blue: 'from-blue-500 to-blue-600',
+        red: 'from-red-500 to-red-600'
     };
+    const buttonClass = action ? 'cursor-pointer' : '';
 
     return (
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Container
-                component="main"
-                maxWidth="lg" // Larger container for dashboard
-                sx={{
-                    py: { xs: 4, sm: 6, md: 8 },
-                    background: 'linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%)',
-                    minHeight: '100vh',
-                }}
-            >
-                <Paper sx={{ p: { xs: 3, sm: 4, md: 5 }, mb: 4 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-                        <DashboardIcon sx={{ fontSize: 48, color: 'primary.main', mr: 2 }} />
-                        <Typography component="h1" variant="h4">
-                            Operator Dashboard
-                        </Typography>
-                    </Box>
-
-                    {loading ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
-                            <CircularProgress />
-                            <Typography variant="h6" sx={{ ml: 2 }}>Loading Dashboard Data...</Typography>
-                        </Box>
-                    ) : (
-                        <Grid container spacing={4}>
-                            {/* Daily Task Dashboard */}
-                            <Grid item xs={12} md={6}>
-                                <Paper sx={{ p: 3, height: '100%' }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                        <AssignmentIcon sx={{ fontSize: 32, color: 'secondary.main', mr: 1.5 }} />
-                                        <Typography variant="h5">Daily Tasks</Typography>
-                                    </Box>
-                                    <Divider sx={{ mb: 2 }} />
-                                    {scheduledTasks.length > 0 ? (
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                            {scheduledTasks.map(task => (
-                                                <Paper key={task.id} variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
-                                                    <Typography variant="h6" color="text.primary">{task.title}</Typography>
-                                                    <Typography variant="body2" color="text.secondary">Time: {task.time}</Typography>
-                                                    <Typography variant="body2" color="text.secondary">Location: {task.location}</Typography>
-                                                    <Typography variant="body2" color={task.status === 'On Track' ? 'success.main' : 'text.secondary'}>Status: {task.status}</Typography>
-                                                </Paper>
-                                            ))}
-                                        </Box>
-                                    ) : (
-                                        <Typography variant="body1" color="text.secondary">No tasks scheduled for today.</Typography>
-                                    )}
-                                </Paper>
-                            </Grid>
-
-                            {/* Machine Overview */}
-                            <Grid item xs={12} md={6}>
-                                <Paper sx={{ p: 3, height: '100%' }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                        <LocalGasStationIcon sx={{ fontSize: 32, color: 'secondary.main', mr: 1.5 }} />
-                                        <Typography variant="h5">Machine Overview</Typography>
-                                    </Box>
-                                    <Divider sx={{ mb: 2 }} />
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                        <Typography variant="body1">Engine Hours: <Typography component="span" fontWeight="bold" color="primary.main">{machineMetrics.engineHours}</Typography></Typography>
-                                        <Typography variant="body1">Fuel Used: <Typography component="span" fontWeight="bold" color="primary.main">{machineMetrics.fuelUsed} L</Typography></Typography>
-                                        <Typography variant="body1">Load Cycles: <Typography component="span" fontWeight="bold" color="primary.main">{machineMetrics.loadCycles}</Typography></Typography>
-                                        <Typography variant="body1">Idling Percentage: <Typography component="span" fontWeight="bold" color={machineMetrics.idlingPercentage > 10 ? 'warning.main' : 'success.main'}>{machineMetrics.idlingPercentage}%</Typography></Typography>
-                                        <Typography variant="body1">Safety Alerts Triggered: <Typography component="span" fontWeight="bold" color={machineMetrics.safetyAlertsTriggered > 0 ? 'error.main' : 'success.main'}>{machineMetrics.safetyAlertsTriggered}</Typography></Typography>
-                                    </Box>
-                                </Paper>
-                            </Grid>
-
-                            {/* Weather-aware Scheduling */}
-                            {weatherForecast && (
-                                <Grid item xs={12} md={6}>
-                                    <Paper sx={{ p: 3, height: '100%', bgcolor: weatherForecast.warnings.length > 0 ? 'error.lightest' : 'background.paper' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                            <CloudIcon sx={{ fontSize: 32, color: weatherForecast.warnings.length > 0 ? 'error.main' : 'info.main', mr: 1.5 }} />
-                                            <Typography variant="h5">Weather Impact</Typography>
-                                        </Box>
-                                        <Divider sx={{ mb: 2 }} />
-                                        <Typography variant="body1" fontWeight="bold">Conditions: {weatherForecast.conditions} ({weatherForecast.temperature}, {weatherForecast.windSpeed})</Typography>
-                                        {weatherForecast.warnings.length > 0 ? (
-                                            <Box sx={{ mt: 1, mb: 2 }}>
-                                                <Typography variant="body2" color="error.main" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <WarningIcon sx={{ mr: 0.5 }} fontSize="small" /> Weather Warnings:
-                                                </Typography>
-                                                <List dense sx={{ ml: 1 }}>
-                                                    {weatherForecast.warnings.map((warning, index) => (
-                                                        <ListItem key={index} disablePadding> {/* Corrected ListItem structure */}
-                                                            <ListItemText primary={<Typography variant="body2" color="error.main">- {warning}</Typography>} />
-                                                        </ListItem>
-                                                    ))}
-                                                </List>
-                                                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                                    **Recommendation:** {weatherForecast.impact}
-                                                </Typography>
-                                                <Button variant="contained" color="error" size="small" sx={{ mt: 2 }} onClick={() => setIsWeatherModalOpen(true)}>View Details & Reschedule</Button>
-                                            </Box>
-                                        ) : (
-                                            <Typography variant="body2" color="success.main" sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                                                <CheckCircleIcon sx={{ mr: 0.5 }} fontSize="small" /> Optimal weather conditions.
-                                            </Typography>
-                                        )}
-                                    </Paper>
-                                </Grid>
-                            )}
-
-                            {/* Location-specific Task Allocation */}
-                            {taskAllocationSuggestion && (
-                                <Grid item xs={12} md={6}>
-                                    <Paper sx={{ p: 3, height: '100%' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                            <LocationOnIcon sx={{ fontSize: 32, color: 'info.main', mr: 1.5 }} />
-                                            <Typography variant="h5">Task Allocation Suggestion</Typography>
-                                        </Box>
-                                        <Divider sx={{ mb: 2 }} />
-                                        <Typography variant="body1" sx={{ mb: 1 }}>
-                                            **New Task:** {taskAllocationSuggestion.newTask.name} at {taskAllocationSuggestion.newTask.location}
-                                        </Typography>
-                                        <Typography variant="body1" sx={{ mb: 1 }}>
-                                            **Optimal Machine:** {taskAllocationSuggestion.optimalMachine.id} ({taskAllocationSuggestion.optimalMachine.type}) - {taskAllocationSuggestion.optimalMachine.distance} km away. (Status: {taskAllocationSuggestion.optimalMachine.status})
-                                        </Typography>
-                                        <Button variant="contained" size="small" sx={{ mt: 2 }} onClick={() => setIsTaskAllocationModalOpen(true)}>View Other Options</Button>
-                                    </Paper>
-                                </Grid>
-                            )}
-
-                            {/* Route Optimization */}
-                            {routeOptimizationSuggestion && (
-                                <Grid item xs={12} md={6}>
-                                    <Paper sx={{ p: 3, height: '100%' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                            <AltRouteIcon sx={{ fontSize: 32, color: 'secondary.main', mr: 1.5 }} />
-                                            <Typography variant="h5">Route Optimization</Typography>
-                                        </Box>
-                                        <Divider sx={{ mb: 2 }} />
-                                        <Typography variant="body1" sx={{ mb: 1 }}>
-                                            **Route from {routeOptimizationSuggestion.origin} to {routeOptimizationSuggestion.destination}:**
-                                        </Typography>
-                                        <TableContainer component={Paper} variant="outlined" sx={{ mt: 2 }}>
-                                            <Table size="small">
-                                                <TableHead>
-                                                    <TableRow>
-                                                        <TableCell sx={{ fontWeight: 'bold' }}>Route Name</TableCell>
-                                                        <TableCell sx={{ fontWeight: 'bold' }}>Duration</TableCell>
-                                                        <TableCell sx={{ fontWeight: 'bold' }}>Congestion</TableCell>
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    {routeOptimizationSuggestion.routes.map((route) => (
-                                                        <TableRow key={route.id} sx={{ bgcolor: route.alternative ? 'info.lightest' : 'inherit' }}>
-                                                            <TableCell>{route.name} {route.alternative && '(Recommended)'}</TableCell>
-                                                            <TableCell>{route.duration}</TableCell>
-                                                            <TableCell sx={{ color: route.congestion === 'Heavy' ? 'error.main' : 'success.main' }}>{route.congestion}</TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                        </TableContainer>
-                                        <Button variant="contained" size="small" sx={{ mt: 2 }} onClick={() => setIsRouteModalOpen(true)}>View Map & Traffic</Button>
-                                    </Paper>
-                                </Grid>
-                            )}
-
-                            {/* Operator Health Details */}
-                            <Grid item xs={12}>
-                                <Paper sx={{ p: 3 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                        <HealthAndSafetyIcon sx={{ fontSize: 32, color: 'primary.main', mr: 1.5 }} />
-                                        <Typography variant="h5">Operator Health Details</Typography>
-                                    </Box>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                                        *This information is used for proactive safety alerts and intelligent climate control. Highly sensitive data (medications, pre-existing conditions) is optional and handled with strict privacy protocols.
-                                    </Typography>
-                                    <Divider sx={{ mb: 2 }} />
-
-                                    {/* Real-time Biometrics */}
-                                    <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Real-time Biometrics (Simulated)</Typography>
-                                    <Grid container spacing={2} sx={{ mb: 3 }}>
-                                        <Grid item xs={6} sm={4}>
-                                            <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                                                <Typography variant="body1" fontWeight="bold">Heart Rate</Typography>
-                                                <Typography variant="h5" color="primary.main">{heartRate} bpm</Typography>
-                                            </Paper>
-                                        </Grid>
-                                        <Grid item xs={6} sm={4}>
-                                            <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                                                <Typography variant="body1" fontWeight="bold">Body Temp</Typography>
-                                                <Typography variant="h5" color="primary.main">{bodyTemp}°C</Typography>
-                                            </Paper>
-                                        </Grid>
-                                        <Grid item xs={12} sm={4}>
-                                            <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                                                <Typography variant="body1" fontWeight="bold">Cabin Temp/Humidity</Typography>
-                                                <Typography variant="h6" color="primary.main">{cabinTemp}°C / {cabinHumidity}%</Typography>
-                                                <Typography variant="body2" color="text.secondary">CO2: {cabinCO2} ppm</Typography>
-                                            </Paper>
-                                        </Grid>
-                                    </Grid>
-
-                                    {/* Current Symptoms (Self-Reported) */}
-                                    <Typography variant="h6" sx={{ mb: 1 }}>Current Symptoms (Self-Reported)</Typography>
-                                    <FormGroup row sx={{ mb: 2 }}>
-                                        <FormControlLabel control={<Checkbox checked={currentSymptoms.includes('Drowsy')} onChange={handleSymptomChange} value="Drowsy" />} label="Feeling Drowsy" />
-                                        <FormControlLabel control={<Checkbox checked={currentSymptoms.includes('Headache')} onChange={handleSymptomChange} value="Headache" />} label="Headache" />
-                                        <FormControlLabel control={<Checkbox checked={currentSymptoms.includes('Dizzy')} onChange={handleSymptomChange} value="Dizzy" />} label="Dizzy" />
-                                        <FormControlLabel control={<Checkbox checked={currentSymptoms.includes('Nausea')} onChange={handleSymptomChange} value="Nausea" />} label="Nausea" />
-                                        <FormControlLabel control={<Checkbox checked={currentSymptoms.includes('Fatigued')} onChange={handleSymptomChange} value="Fatigued" />} label="Fatigued" />
-                                    </FormGroup>
-
-                                    {/* Medication List & Pre-existing Conditions */}
-                                    <Grid container spacing={3}>
-                                        <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="Medication List (Optional)" multiline rows={2} value={medicationList} onChange={(e) => setMedicationList(e.target.value)} placeholder="e.g., Ibuprofen, Allergy medication" />
-                                        </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="Pre-existing Conditions (Optional)" multiline rows={2} value={preExistingConditions} onChange={(e) => setPreExistingConditions(e.target.value)} placeholder="e.g., Diabetes, Hypertension" />
-                                        </Grid>
-                                    </Grid>
-                                </Paper>
-                            </Grid>
-                        </Grid>
-                    )}
-                </Paper>
-            </Container>
-
-            {/* Weather Modal */}
-            <Dialog open={isWeatherModalOpen} onClose={() => setIsWeatherModalOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ m: 0, p: 2, bgcolor: 'error.main', color: 'white' }}>
-                    Weather Alert & Task Adjustment
-                    <IconButton aria-label="close" onClick={() => setIsWeatherModalOpen(false)} sx={{ position: 'absolute', right: 8, top: 8, color: 'white' }}>
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent dividers sx={{ p: 3 }}>
-                    {weatherForecast && (
-                        <Box>
-                            <Typography variant="h6" color="error.main" sx={{ mb: 1 }}>
-                                Current Conditions: {weatherForecast.conditions}
-                            </Typography>
-                            <Typography variant="body1" sx={{ mb: 2 }}>
-                                Temperature: {weatherForecast.temperature}, Wind: {weatherForecast.windSpeed}
-                            </Typography>
-                            <Typography variant="body1" fontWeight="bold" sx={{ mb: 1 }}>Warnings:</Typography>
-                            <List dense sx={{ ml: 1 }}>
-                                {weatherForecast.warnings.map((warning, index) => (
-                                    <ListItem key={index} disablePadding>
-                                        <ListItemText primary={<Typography variant="body2" color="error.main">- {warning}</Typography>} />
-                                    </ListItem>
-                                ))}
-                            </List>
-                            <Typography variant="body1" sx={{ mt: 2 }}>
-                                **Impact:** {weatherForecast.impact}
-                            </Typography>
-                            <Typography variant="body1" sx={{ mt: 2, fontWeight: 'bold' }}>
-                                Suggested Action:
-                            </Typography>
-                            <Typography variant="body2">
-                                Reschedule "Excavation for Foundation" to a later time or day with better weather.
-                                Consider indoor tasks or maintenance during severe weather.
-                            </Typography>
-                        </Box>
-                    )}
-                </DialogContent>
-                <DialogActions sx={{ p: 2 }}>
-                    <Button onClick={() => setIsWeatherModalOpen(false)} variant="outlined">Close</Button>
-                    <Button variant="contained" color="error">Reschedule Task</Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Task Allocation Modal */}
-            <Dialog open={isTaskAllocationModalOpen} onClose={() => setIsTaskAllocationModalOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ m: 0, p: 2, bgcolor: 'info.main', color: 'white' }}>
-                    Task Allocation Details
-                    <IconButton aria-label="close" onClick={() => setIsTaskAllocationModalOpen(false)} sx={{ position: 'absolute', right: 8, top: 8, color: 'white' }}>
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent dividers sx={{ p: 3 }}>
-                    {taskAllocationSuggestion && (
-                        <Box>
-                            <Typography variant="h6" sx={{ mb: 1 }}>New Task: {taskAllocationSuggestion.newTask.name}</Typography>
-                            <Typography variant="body1" sx={{ mb: 2 }}>Location: {taskAllocationSuggestion.newTask.location}</Typography>
-
-                            <Typography variant="body1" fontWeight="bold" sx={{ mb: 1 }}>Optimal Machine:</Typography>
-                            <Typography variant="body2" sx={{ mb: 2 }}>
-                                {taskAllocationSuggestion.optimalMachine.id} ({taskAllocationSuggestion.optimalMachine.type}) - {taskAllocationSuggestion.optimalMachine.distance} km away. (Status: {taskAllocationSuggestion.optimalMachine.status})
-                            </Typography>
-
-                            <Typography variant="body1" fontWeight="bold" sx={{ mb: 1 }}>Other Nearby Machines:</Typography>
-                            <List dense>
-                                {taskAllocationSuggestion.otherNearby.length > 0 ? (
-                                    taskAllocationSuggestion.otherNearby.map((machine, index) => (
-                                        <ListItem key={index} disablePadding>
-                                            <ListItemText primary={`${machine.id} (${machine.type}) - ${machine.distance} km away. (Status: ${machine.status})`} />
-                                        </ListItem>
-                                    ))
-                                ) : (
-                                    <ListItemText primary="No other nearby machines." />
-                                )}
-                            </List>
-                        </Box>
-                    )}
-                </DialogContent>
-                <DialogActions sx={{ p: 2 }}>
-                    <Button onClick={() => setIsTaskAllocationModalOpen(false)} variant="outlined">Close</Button>
-                    <Button variant="contained" color="info">Assign Task</Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Route Optimization Modal */}
-            <Dialog open={isRouteModalOpen} onClose={() => setIsRouteModalOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ m: 0, p: 2, bgcolor: 'secondary.main', color: 'white' }}>
-                    Route Details & Map
-                    <IconButton aria-label="close" onClick={() => setIsRouteModalOpen(false)} sx={{ position: 'absolute', right: 8, top: 8, color: 'white' }}>
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent dividers sx={{ p: 3 }}>
-                    {routeOptimizationSuggestion && (
-                        <Box>
-                            <Typography variant="h6" sx={{ mb: 1 }}>
-                                Route from {routeOptimizationSuggestion.origin} to {routeOptimizationSuggestion.destination}
-                            </Typography>
-                            <TableContainer component={Paper} variant="outlined" sx={{ mt: 2 }}>
-                                <Table size="small">
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell sx={{ fontWeight: 'bold' }}>Route Name</TableCell>
-                                            <TableCell sx={{ fontWeight: 'bold' }}>Duration</TableCell>
-                                            <TableCell sx={{ fontWeight: 'bold' }}>Congestion</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {routeOptimizationSuggestion.routes.map((route) => (
-                                            <TableRow key={route.id} sx={{ bgcolor: route.alternative ? 'info.lightest' : 'inherit' }}>
-                                                <TableCell>{route.name} {route.alternative && '(Recommended)'}</TableCell>
-                                                <TableCell>{route.duration}</TableCell>
-                                                <TableCell sx={{ color: route.congestion === 'Heavy' ? 'error.main' : 'success.main' }}>{route.congestion}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                                *In a real application, an interactive map showing the routes would be displayed here.
-                            </Typography>
-                        </Box>
-                    )}
-                </DialogContent>
-                <DialogActions sx={{ p: 2 }}>
-                    <Button onClick={() => setIsRouteModalOpen(false)} variant="outlined">Close</Button>
-                    <Button variant="contained" color="secondary">Start Navigation</Button>
-                </DialogActions>
-            </Dialog>
-        </ThemeProvider>
+        <div className={`bg-gradient-to-br ${colorClasses[color]} text-white p-6 rounded-xl shadow-lg ${buttonClass}`} onClick={action}>
+            <div className="flex justify-between items-center">
+                <div>
+                    <p className="text-sm uppercase opacity-80">{title}</p>
+                    <p className="text-3xl font-bold">{value}</p>
+                </div>
+                <Icon size={40} className="opacity-50" />
+            </div>
+        </div>
     );
-}
+};
+
+
+// 3. Machine Health View Component
+const MachineHealth = () => {
+  const getFaultChip = (severity) => {
+    switch (severity) {
+      case 'critical':
+        return <span className="flex items-center text-xs font-semibold bg-red-500/20 text-red-400 px-2 py-1 rounded-full"><XCircle size={14} className="mr-1"/>Critical</span>;
+      case 'warning':
+        return <span className="flex items-center text-xs font-semibold bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full"><AlertTriangle size={14} className="mr-1"/>Warning</span>;
+      case 'info':
+        return <span className="flex items-center text-xs font-semibold bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full"><CheckCircle size={14} className="mr-1"/>Info</span>;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="text-gray-800">
+      <h1 className="text-4xl font-bold text-black mb-6">Machine Health</h1>
+      
+      {/* Gauges and Metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Gauge title="Fuel Level" value={machineHealthData.fuelLevel} unit="%" />
+        <Gauge title="DEF Level" value={machineHealthData.defLevel} unit="%" />
+        <Gauge title="Engine Temp" value={machineHealthData.engineTemp} unit="°C" />
+        <Gauge title="Hydraulic Temp" value={machineHealthData.hydraulicTemp} unit="°C" />
+      </div>
+
+      {/* Key Data Points */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <DataPoint label="Engine Hours" value={machineHealthData.engineHours} />
+          <DataPoint label="Next Service Due" value={machineHealthData.nextService} />
+      </div>
+
+      {/* Faults Section */}
+      <div>
+        <h2 className="text-2xl font-bold text-black mb-4">Active Fault Codes</h2>
+        <div className="bg-white rounded-lg shadow-md">
+          <ul className="divide-y divide-gray-200">
+            {machineHealthData.faults.length > 0 ? machineHealthData.faults.map((fault) => (
+              <li key={fault.code} className="p-4 flex justify-between items-center">
+                <div>
+                  <p className="font-bold text-gray-800">{fault.code}</p>
+                  <p className="text-gray-600">{fault.description}</p>
+                </div>
+                {getFaultChip(fault.severity)}
+              </li>
+            )) : <li className="p-4 text-gray-500">No active faults. System nominal.</li>}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Reusable Gauge Component
+const Gauge = ({ title, value, unit }) => {
+  const percentage = Math.min(Math.max(value, 0), 100);
+  const circumference = 2 * Math.PI * 45;
+  const offset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
+      <div className="relative w-32 h-32">
+        <svg className="w-full h-full" viewBox="0 0 100 100">
+          <circle className="text-gray-200" strokeWidth="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+          <circle
+            className="text-yellow-400"
+            strokeWidth="10"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            stroke="currentColor"
+            fill="transparent"
+            r="45"
+            cx="50"
+            cy="50"
+            style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 0.5s ease-in-out' }}
+          />
+        </svg>
+        <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
+          <span className="text-3xl font-bold text-black">{value}</span>
+          <span className="text-sm text-gray-500">{unit}</span>
+        </div>
+      </div>
+      <p className="mt-2 font-semibold text-gray-700">{title}</p>
+    </div>
+  );
+};
+
+// Reusable Data Point Component
+const DataPoint = ({ label, value }) => (
+    <div className="bg-white p-4 rounded-lg shadow-md">
+        <p className="text-sm text-gray-500 uppercase">{label}</p>
+        <p className="text-2xl font-bold text-black">{value}</p>
+    </div>
+);
+
+
+// 4. Safety Checklist View Component
+const SafetyChecklist = () => {
+  const [checklist, setChecklist] = useState(safetyChecklistItems);
+
+  const handleCheck = (id) => {
+    setChecklist(
+      checklist.map((item) =>
+        item.id === id ? { ...item, checked: !item.checked } : item
+      )
+    );
+  };
+  
+  const allChecked = checklist.every(item => item.checked);
+
+  return (
+    <div className="text-gray-800">
+      <h1 className="text-4xl font-bold text-black mb-6">Pre-Operation Safety Checklist</h1>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <p className="text-gray-600 mb-6">Complete this checklist before starting any operations for the day. Your safety is the first priority.</p>
+        
+        <div className="space-y-4">
+          {checklist.map((item) => (
+            <label key={item.id} htmlFor={item.id} className="flex items-center p-3 rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
+              <input
+                id={item.id}
+                type="checkbox"
+                checked={item.checked}
+                onChange={() => handleCheck(item.id)}
+                className="h-6 w-6 rounded border-gray-300 text-yellow-400 focus:ring-yellow-500"
+              />
+              <span className={`ml-4 text-lg ${item.checked ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
+                {item.text}
+              </span>
+            </label>
+          ))}
+        </div>
+
+        <div className="mt-8 border-t pt-6 flex justify-end">
+          <button 
+            disabled={!allChecked} 
+            className={`px-8 py-3 rounded-lg font-bold text-white transition-all duration-300 ${
+              allChecked 
+                ? 'bg-green-500 hover:bg-green-600 shadow-lg hover:shadow-xl' 
+                : 'bg-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {allChecked ? 'Submit & Start Work' : 'Complete All Items to Proceed'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

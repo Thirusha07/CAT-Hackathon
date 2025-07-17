@@ -418,7 +418,7 @@ useEffect(() => {
             <AppBar position="static" color="primary" enableColorOnDark>
   <Toolbar sx={{ justifyContent: 'space-between' }}>
     <Typography variant="h6" component="div">
-      Caterpillar Training Hub
+      Smart Operator
     </Typography>
     <Box>
       <Button color="inherit" href="/Project/health-documents">Health Docs</Button>
@@ -433,7 +433,7 @@ useEffect(() => {
                 maxWidth="lg" 
                 sx={{ 
                     py: { xs: 4, sm: 6, md: 8 }, 
-                    background: 'linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%)', 
+                    background: 'transparent', 
                     minHeight: '100vh', 
                 }} 
             > 

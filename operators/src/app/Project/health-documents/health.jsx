@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-    Box, AppBar ,Toolbar ,
+    Box, AppBar ,Toolbar ,Container,
     Typography,
     TextField,
     Button,
@@ -19,97 +19,158 @@ import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'; // Icon f
 import DescriptionIcon from '@mui/icons-material/Description'; // Icon for documents
 
 // Define a custom theme for consistency
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#FFC72C', // Caterpillar Yellow
-            light: '#FFD966',
-            dark: '#E0B000',
-            contrastText: '#1A1A1A',
-        },
-        secondary: {
-            main: '#4A4A4A',
-            light: '#666666',
-            dark: '#333333',
-            contrastText: '#FFFFFF',
-        },
-        background: {
-            default: '#F0F2F5',
-            paper: '#FFFFFF',
-        },
-        text: {
-            primary: '#1A1A1A',
-            secondary: '#555555',
-        },
-        error: {
-            main: '#D32F2F',
-        },
-    },
-    typography: {
-        fontFamily: 'Inter, sans-serif',
-        h5: {
-            fontWeight: 600,
-            color: '#1A1A1A',
-            marginBottom: '16px',
-        },
-        h6: {
-            fontWeight: 600,
-            color: '#1A1A1A',
-            marginBottom: '12px',
-        },
-        body1: {
-            color: '#333333',
-        },
-        body2: {
-            color: '#555555',
-        }
-    },
-    components: {
-        MuiPaper: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 12,
-                    boxShadow: '0px 8px 25px rgba(0, 0, 0, 0.08)',
-                },
-            },
-        },
-        MuiTextField: {
-            styleOverrides: {
-                root: {
-                    '& .MuiOutlinedInput-root': {
-                        borderRadius: 10,
-                        '& fieldset': {
-                            borderColor: '#CCCCCC',
-                        },
-                        '&:hover fieldset': {
-                            borderColor: '#999999',
-                        },
-                        '&.Mui-focused fieldset': {
-                            borderColor: '#FFC72C',
-                            borderWidth: '2px',
-                        },
-                    },
-                    '& .MuiInputLabel-root': {
-                        color: '#555555',
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': {
-                        color: '#FFC72C',
-                    },
-                },
-            },
-        },
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 10,
-                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                    '&:active': {
-                        transform: 'scale(0.98)',
-                    },
-                },
-            },
-        },
-    }
+const theme = createTheme({ 
+    palette: { 
+        primary: { 
+            main: '#FFC72C', // Caterpillar Yellow 
+            light: '#FFD966', 
+            dark: '#E0B000', 
+            contrastText: '#1A1A1A', 
+        }, 
+        secondary: { 
+            main: '#4A4A4A', 
+            light: '#666666', 
+            dark: '#333333', 
+            contrastText: '#FFFFFF', 
+        }, 
+        background: { 
+            default: '#F0F2F5', 
+            paper: '#FFFFFF', 
+        }, 
+        text: { 
+            primary: '#1A1A1A', 
+            secondary: '#555555', 
+        }, 
+        error: { 
+            main: '#D32F2F', 
+        }, 
+        success: { 
+            main: '#4CAF50', 
+        }, 
+        info: { 
+            main: '#2196F3', 
+        }, 
+    }, 
+    typography: { 
+        fontFamily: 'Inter, sans-serif', 
+        h4: { 
+            fontWeight: 700, 
+            color: '#1A1A1A', 
+        }, 
+        h5: { 
+            fontWeight: 600, 
+            color: '#1A1A1A', 
+            marginBottom: '16px', 
+        }, 
+        h6: { 
+            fontWeight: 600, 
+            color: '#1A1A1A', 
+            marginBottom: '12px', 
+        }, 
+        body1: { 
+            color: '#333333', 
+        }, 
+        body2: { 
+            color: '#555555', 
+        }, 
+        button: { 
+            textTransform: 'none', 
+            fontWeight: 600, 
+        }, 
+    }, 
+    components: { 
+        MuiPaper: { 
+            styleOverrides: { 
+                root: { 
+                    borderRadius: 12, 
+                    boxShadow: '0px 8px 25px rgba(0, 0, 0, 0.08)', 
+                }, 
+            }, 
+        }, 
+        MuiButton: { 
+            styleOverrides: { 
+                root: { 
+                    borderRadius: 10, 
+                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out', 
+                    '&:active': { 
+                        transform: 'scale(0.98)', 
+                    }, 
+                }, 
+            }, 
+        }, 
+        MuiTextField: { 
+            styleOverrides: { 
+                root: { 
+                    '& .MuiOutlinedInput-root': { 
+                        borderRadius: 10, 
+                        '& fieldset': { 
+                            borderColor: '#CCCCCC', 
+                        }, 
+                        '&:hover fieldset': { 
+                            borderColor: '#999999', 
+                        }, 
+                        '&.Mui-focused fieldset': { 
+                            borderColor: '#FFC72C', 
+                            borderWidth: '2px', 
+                        }, 
+                    }, 
+                    '& .MuiInputLabel-root': { 
+                        color: '#555555', 
+                    }, 
+                    '& .MuiInputLabel-root.Mui-focused': { 
+                        color: '#FFC72C', 
+                    }, 
+                }, 
+            }, 
+        }, 
+        MuiAccordion: { 
+            styleOverrides: { 
+                root: { 
+                    borderRadius: 8, 
+                    boxShadow: 'none', 
+                    border: '1px solid #E0E0E0', 
+                    '&:before': { 
+                        display: 'none', 
+                    }, 
+                    '&.Mui-expanded': { 
+                        margin: 'auto', 
+                    }, 
+                }, 
+            }, 
+        }, 
+        MuiAccordionSummary: { 
+            styleOverrides: { 
+                root: { 
+                    borderRadius: '8px 8px 0 0', 
+                    backgroundColor: '#FAFAFA', 
+                    '&.Mui-expanded': { 
+                        minHeight: 48, 
+                    }, 
+                }, 
+                content: { 
+                    '&.Mui-expanded': { 
+                        margin: '12px 0', 
+                    }, 
+                }, 
+            }, 
+        }, 
+        MuiAccordionDetails: { 
+            styleOverrides: { 
+                root: { 
+                    padding: '16px', 
+                    borderTop: '1px solid #E0E0E0', 
+                }, 
+            }, 
+        }, 
+        MuiChip: { 
+            styleOverrides: { 
+                root: { 
+                    borderRadius: 8, 
+                    fontWeight: 500, 
+                }, 
+            }, 
+        }, 
+    } 
 });
 
 export default function OperatorHealthAndDocuments() {
@@ -154,18 +215,26 @@ export default function OperatorHealthAndDocuments() {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline /> <AppBar position="static" color="primary" enableColorOnDark>
-  <Toolbar sx={{ justifyContent: 'space-between' }}>
-    <Typography variant="h6" component="div">
-      Caterpillar Training Hub
-    </Typography>
-    <Box>
-      <Button color="inherit" href="/Project/health-documents">Health Docs</Button>
-      <Button color="inherit" href="/Project/daily-task">Daily Task</Button>
-      <Button color="inherit" href="/Project/operator-profile">Operator Profile</Button>
-      <Button color="inherit" href="/Project/login">Login</Button>
-      <Button color="inherit" href="/Project/signup">Signup</Button>
-    </Box>
-  </Toolbar>
+              <Toolbar sx={{ justifyContent: 'space-between' }}>
+                <Typography variant="h6" component="div">
+                  Smart Operator
+                </Typography>
+                <Box>
+                  <Button color="inherit" href="/Project/health-documents">Health Docs</Button>
+                  <Button color="inherit" href="/Project/daily-task">Daily Task</Button>
+                  <Button color="inherit" href="/Project/operator-profile">Operator Profile</Button>
+                  <Button color="inherit" href="/Project/login">Login</Button>
+                  <Button color="inherit" href="/Project/signup">Signup</Button>
+                </Box>
+              </Toolbar><Container 
+                component="main" 
+                maxWidth="lg" 
+                sx={{ 
+                    py: { xs: 4, sm: 6, md: 8 }, 
+                    background: 'transparent', 
+                    minHeight: '100vh', 
+                }} 
+            > 
             <Paper sx={{ p: { xs: 3, sm: 4, md: 5 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <HealthAndSafetyIcon sx={{ fontSize: 32, color: 'primary.main', mr: 1.5 }} />
@@ -243,7 +312,7 @@ export default function OperatorHealthAndDocuments() {
                     </Box>
                     {/* Removed the Button for simulating document upload */}
                 </Box>
-            </Paper></AppBar>
+            </Paper></Container></AppBar>
         </ThemeProvider>
     );
 }
