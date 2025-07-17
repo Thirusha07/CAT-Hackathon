@@ -1,29 +1,18 @@
-import React, { useState, FormEvent } from 'react';
-import {
-    Container,
-    Box,
-    Typography,
-    TextField,
-    Button,
-    CircularProgress,
-    Alert,
-    MenuItem,
-    Select,
-    InputLabel,
-    FormControl,
-    Paper,
-    Divider,
-    createTheme,
-    ThemeProvider,
-    CssBaseline
-} from '@mui/material';
-import PersonAddIcon from '@mui/icons-material/PersonAdd'; // Icon for sign-up
+"use client";
 
-// Define a custom theme for consistency
+import React, { useState } from 'react';
+import axios from 'axios';
+import {
+    Container, Box, Typography, TextField, Button, CircularProgress, Alert, MenuItem,
+    Select, InputLabel, FormControl, Paper, Divider, createTheme, ThemeProvider,
+    CssBaseline, Chip, OutlinedInput
+} from '@mui/material';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+
 const theme = createTheme({
     palette: {
         primary: {
-            main: '#FFC72C', // Caterpillar Yellow
+            main: '#FFC72C',
             light: '#FFD966',
             dark: '#E0B000',
             contrastText: '#1A1A1A',
@@ -45,6 +34,12 @@ const theme = createTheme({
         error: {
             main: '#D32F2F',
         },
+        success: {
+            main: '#4CAF50',
+        },
+        info: {
+            main: '#2196F3',
+        },
     },
     typography: {
         fontFamily: 'Inter, sans-serif',
@@ -62,12 +57,26 @@ const theme = createTheme({
             color: '#1A1A1A',
             marginBottom: '12px',
         },
+        body1: {
+            color: '#333333',
+        },
+        body2: {
+            color: '#555555',
+        },
         button: {
             textTransform: 'none',
             fontWeight: 600,
         },
     },
     components: {
+        MuiPaper: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 12,
+                    boxShadow: '0px 8px 25px rgba(0, 0, 0, 0.08)',
+                },
+            },
+        },
         MuiButton: {
             styleOverrides: {
                 root: {
@@ -104,127 +113,116 @@ const theme = createTheme({
                 },
             },
         },
-        MuiAlert: {
+        MuiChip: {
             styleOverrides: {
                 root: {
                     borderRadius: 8,
-                    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-                },
-            },
-        },
-        MuiPaper: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 12,
-                    boxShadow: '0px 8px 25px rgba(0, 0, 0, 0.08)',
-                },
-            },
-        },
-        MuiFormControl: {
-            styleOverrides: {
-                root: {
-                    '& .MuiOutlinedInput-root': {
-                        borderRadius: 10,
-                        '& fieldset': {
-                            borderColor: '#CCCCCC',
-                        },
-                        '&:hover fieldset': {
-                            borderColor: '#999999',
-                        },
-                        '&.Mui-focused fieldset': {
-                            borderColor: '#FFC72C',
-                            borderWidth: '2px',
-                        },
-                    },
-                    '& .MuiInputLabel-root': {
-                        color: '#555555',
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': {
-                        color: '#FFC72C',
-                    },
+                    fontWeight: 500,
                 },
             },
         },
     }
 });
 
-// Mock data for dropdowns
+
+// Constants for dropdowns - updated for the new schema
 const machineTypes = ['Excavator', 'Wheel Loader', 'Dozer', 'Grader', 'Dump Truck'];
 const sites = ['Site A - North', 'Site B - Central', 'Site C - South'];
 const languages = ['English', 'Spanish', 'French', 'German'];
-const roles = ['General Operator', 'Grading Specialist', 'Hauling Specialist', 'Excavation Lead'];
+// NEW: Specialization enum values from your schema
+const specializations = ["Heavy Machinery", "Earth Moving", "Material Handling", "Electrical", "Mechanical"];
 const yearsOfExperienceOptions = Array.from({ length: 30 }, (_, i) => i + 1);
 
-// Mock account creation function
-const mockCreateAccount = async (accountData) => {
-    console.log("Creating account with data:", accountData);
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            if (accountData.email === 'existing@example.com') {
-                reject({ success: false, message: 'Email already registered.' });
-            } else if (accountData.password !== accountData.confirmPassword) {
-                reject({ success: false, message: 'Passwords do not match.' });
-            }
-            else {
-                resolve({ success: true, message: 'Account created successfully!' });
-            }
-        }, 1500);
-    });
+// API call function
+    const createAccount = async (accountData) => {
+    try {
+        const response = await axios.post('/api/operator/create', accountData);
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            throw new Error(error.response.data.message || 'Failed to create account');
+        } else {
+            throw new Error('An unexpected error occurred');
+        }
+    }
 };
 
+
 export default function SignUpPage() {
+    // Form State - updated to match schema fields
     const [fullName, setFullName] = useState('');
     const [operatorId, setOperatorId] = useState('');
-    const [companyId, setCompanyId] = useState('');
+    const [sectorId, setSectorId] = useState(''); // Renamed from companyId
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [assignedMachineType, setAssignedMachineType] = useState('');
-    const [primarySite, setPrimarySite] = useState('');
+    const [assignedMachines, setAssignedMachines] = useState([]); // Changed to array for multiple selections
+    const [primeSiteLocation, setPrimeSiteLocation] = useState(''); // Renamed from primarySite
     const [emergencyContactName, setEmergencyContactName] = useState('');
     const [emergencyContactPhone, setEmergencyContactPhone] = useState('');
-
-    // Optional details
-    const [profilePicture, setProfilePicture] = useState(null); // For file input
+    const [profilePicture, setProfilePicture] = useState(null);
     const [preferredLanguage, setPreferredLanguage] = useState('');
-    const [yearsExperience, setYearsExperience] = useState('');
-    // const [certifications, setCertifications] = useState(''); // Removed
-    const [roleSpecialization, setRoleSpecialization] = useState('');
+    const [yearsOfExperience, setYearsOfExperience] = useState(''); // Now required
+    const [specialization, setSpecialization] = useState(''); // Renamed and now required
+
+    // Document status
+    const [healthCheckupValidUntil, setHealthCheckupValidUntil] = useState(''); // New required field
+    const [medicalFitnessValidUntil, setMedicalFitnessValidUntil] = useState('');
+    const [audiometryValidUntil, setAudiometryValidUntil] = useState('');
+    const [visionValidUntil, setVisionValidUntil] = useState('');
+    const [trainingCertValidUntil, setTrainingCertValidUntil] = useState('');
 
     const [loading, setLoading] = useState(false);
     const [alertMessage, setAlertMessage] = useState(null);
 
     const handleCreateAccount = async (event) => {
         event.preventDefault();
+        
+        if (password !== confirmPassword) {
+            setAlertMessage({ type: 'error', message: 'Passwords do not match.' });
+            return;
+        }
+
         setAlertMessage(null);
         setLoading(true);
 
+        // Construct the data object to match the Mongoose Schema
         const accountData = {
-            fullName, operatorId, companyId, email, password, confirmPassword,
-            assignedMachineType, primarySite,
-            emergencyContactName, emergencyContactPhone,
-            profilePicture: profilePicture ? profilePicture.name : null, // Just name for mock
-            preferredLanguage, yearsExperience, // certifications, // Removed
-            roleSpecialization,
+            fullName,
+            operatorId,
+            sectorId,
+            email,
+            password,
+            assignedMachines,
+            primeSiteLocation,
+            emergencyContactName,
+            emergencyContactPhone,
+            profilePicture: profilePicture ? profilePicture.name : null,
+            preferredLanguage,
+            yearsOfExperience,
+            specialization,
+            healthCheckupValidUntil,
+            documentStatus: { // Nested object as per schema
+                medicalFitnessValidUntil,
+                audiometryValidUntil,
+                visionValidUntil,
+                trainingCertValidUntil,
+            },
         };
 
         try {
-            const response = await mockCreateAccount(accountData);
-            if (response.success) {
-                setAlertMessage({ type: 'success', message: response.message + ' You can now log in.' });
-                // Clear form or redirect to login page
-                setFullName(''); setEmail(''); setPassword(''); setConfirmPassword('');
-                setOperatorId(''); setCompanyId(''); setAssignedMachineType(''); setPrimarySite('');
-                setEmergencyContactName(''); setEmergencyContactPhone('');
-                setProfilePicture(null); setPreferredLanguage(''); setYearsExperience('');
-                // setCertifications(''); // Removed
-                setRoleSpecialization('');
-            } else {
-                setAlertMessage({ type: 'error', message: response.message });
-            }
+            const response = await createAccount(accountData);
+            setAlertMessage({ type: 'success', message: response.message });
+            // Clear form
+            setFullName(''); setEmail(''); setPassword(''); setConfirmPassword('');
+            setOperatorId(''); setSectorId(''); setAssignedMachines([]); setPrimeSiteLocation('');
+            setEmergencyContactName(''); setEmergencyContactPhone('');
+            setProfilePicture(null); setPreferredLanguage(''); setYearsOfExperience('');
+            setSpecialization('');
+            setHealthCheckupValidUntil(''); setMedicalFitnessValidUntil('');
+            setAudiometryValidUntil(''); setVisionValidUntil(''); setTrainingCertValidUntil('');
         } catch (err) {
-            console.error("Account creation error:", err);
-            setAlertMessage({ type: 'error', message: err.message || 'An unexpected error occurred during account creation.' });
+            setAlertMessage({ type: 'error', message: err.message });
         } finally {
             setLoading(false);
         }
@@ -236,45 +234,41 @@ export default function SignUpPage() {
         }
     };
 
+    const handleMachineSelectChange = (event) => {
+        const { target: { value } } = event;
+        setAssignedMachines(typeof value === 'string' ? value.split(',') : value);
+    };
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Container
-                component="main"
-                maxWidth="md"
-                sx={{
-                    py: { xs: 4, sm: 6, md: 8 },
-                    background: 'linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%)',
-                    minHeight: '100vh',
-                }}
-            >
+            <Container component="main" maxWidth="md" sx={{ py: { xs: 4, sm: 6, md: 8 } }}>
                 <Paper sx={{ p: { xs: 3, sm: 4, md: 5 }, mb: 4 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
                         <PersonAddIcon sx={{ fontSize: 48, color: 'primary.main', mr: 2 }} />
-                        <Typography component="h1" variant="h4">
-                            Operator Sign-Up
-                        </Typography>
+                        <Typography component="h1" variant="h4">Operator Sign-Up</Typography>
                     </Box>
 
                     {alertMessage && (
-                        <Alert severity={alertMessage.type} sx={{ mb: 3, width: '100%' }}>
-                            {alertMessage.message}
-                        </Alert>
+                        <Alert severity={alertMessage.type} sx={{ mb: 3 }}>{alertMessage.message}</Alert>
                     )}
 
                     <Box component="form" onSubmit={handleCreateAccount} noValidate>
-                        <Typography variant="h5" sx={{ mb: 2 }}>Mandatory Details</Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                        <Typography variant="h5">Mandatory Details</Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 2 }}>
+                            {/* Full Name, Operator ID - unchanged */}
                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
                                 <TextField required fullWidth label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
                             </Box>
                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
                                 <TextField required fullWidth label="Operator ID" value={operatorId} onChange={(e) => setOperatorId(e.target.value)} />
                             </Box>
+                            {/* Sector ID */}
                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
-                                <TextField required fullWidth label="Company/Fleet ID" value={companyId} onChange={(e) => setCompanyId(e.target.value)} />
+                                <TextField required fullWidth label="Sector ID" value={sectorId} onChange={(e) => setSectorId(e.target.value)} />
                             </Box>
-                            <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
+                            {/* Email, Passwords - unchanged */}
+                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
                                 <TextField required fullWidth label="Email Address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                             </Box>
                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
@@ -283,14 +277,21 @@ export default function SignUpPage() {
                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
                                 <TextField required fullWidth label="Confirm Password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                             </Box>
+                            {/* Assigned Machines - Multiple Select */}
                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
                                 <FormControl fullWidth required>
-                                    <InputLabel id="machine-type-label">Assigned Machine Type(s)</InputLabel>
+                                    <InputLabel id="assigned-machines-label">Assigned Machine(s)</InputLabel>
                                     <Select
-                                        labelId="machine-type-label"
-                                        value={assignedMachineType}
-                                        label="Assigned Machine Type(s)"
-                                        onChange={(e) => setAssignedMachineType(e.target.value)}
+                                        labelId="assigned-machines-label"
+                                        multiple
+                                        value={assignedMachines}
+                                        onChange={handleMachineSelectChange}
+                                        input={<OutlinedInput label="Assigned Machine(s)" />}
+                                        renderValue={(selected) => (
+                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                {selected.map((value) => (<Chip key={value} label={value} />))}
+                                            </Box>
+                                        )}
                                     >
                                         {machineTypes.map((type) => (
                                             <MenuItem key={type} value={type}>{type}</MenuItem>
@@ -298,21 +299,34 @@ export default function SignUpPage() {
                                     </Select>
                                 </FormControl>
                             </Box>
+                            {/* Prime Site Location */}
                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
                                 <FormControl fullWidth required>
-                                    <InputLabel id="primary-site-label">Primary Site/Location</InputLabel>
-                                    <Select
-                                        labelId="primary-site-label"
-                                        value={primarySite}
-                                        label="Primary Site/Location"
-                                        onChange={(e) => setPrimarySite(e.target.value)}
-                                    >
-                                        {sites.map((site) => (
-                                            <MenuItem key={site} value={site}>{site}</MenuItem>
-                                        ))}
+                                    <InputLabel id="prime-site-label">Prime Site/Location</InputLabel>
+                                    <Select labelId="prime-site-label" value={primeSiteLocation} label="Prime Site/Location" onChange={(e) => setPrimeSiteLocation(e.target.value)}>
+                                        {sites.map((site) => (<MenuItem key={site} value={site}>{site}</MenuItem>))}
                                     </Select>
                                 </FormControl>
                             </Box>
+                             {/* Years of Experience - Required */}
+                            <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
+                                <FormControl fullWidth required>
+                                    <InputLabel id="experience-label">Years of Experience</InputLabel>
+                                    <Select labelId="experience-label" value={yearsOfExperience} label="Years of Experience" onChange={(e) => setYearsOfExperience(e.target.value)}>
+                                        {yearsOfExperienceOptions.map((year) => (<MenuItem key={year} value={year}>{year}</MenuItem>))}
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                            {/* Specialization - Required */}
+                            <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
+                                <FormControl fullWidth required>
+                                    <InputLabel id="specialization-label">Specialization</InputLabel>
+                                    <Select labelId="specialization-label" value={specialization} label="Specialization" onChange={(e) => setSpecialization(e.target.value)}>
+                                        {specializations.map((spec) => (<MenuItem key={spec} value={spec}>{spec}</MenuItem>))}
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                            {/* Emergency Contacts - unchanged */}
                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
                                 <TextField required fullWidth label="Emergency Contact Name" value={emergencyContactName} onChange={(e) => setEmergencyContactName(e.target.value)} />
                             </Box>
@@ -323,102 +337,49 @@ export default function SignUpPage() {
 
                         <Divider sx={{ my: 4 }} />
 
-                        <Typography variant="h5" sx={{ mb: 2 }}>Optional Details</Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                        {/* Optional Details Section */}
+                        <Typography variant="h5">Optional Details</Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 2 }}>
                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
-                                <Button
-                                    variant="outlined"
-                                    component="label"
-                                    fullWidth
-                                    sx={{
-                                        py: 1.5,
-                                        borderRadius: 10,
-                                        borderColor: 'secondary.main',
-                                        color: 'secondary.main',
-                                        '&:hover': {
-                                            borderColor: 'secondary.dark',
-                                            bgcolor: 'secondary.light',
-                                            color: 'white',
-                                        }
-                                    }}
-                                >
+                                <Button variant="outlined" component="label" fullWidth sx={{ py: 1.5 }}>
                                     Upload Profile Picture
                                     <input type="file" hidden accept="image/*" onChange={handleProfilePictureChange} />
                                 </Button>
-                                {profilePicture && (
-                                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
-                                        {profilePicture.name} selected
-                                    </Typography>
-                                )}
+                                {profilePicture && (<Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>{profilePicture.name} selected</Typography>)}
                             </Box>
                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
                                 <FormControl fullWidth>
                                     <InputLabel id="language-label">Preferred Language</InputLabel>
-                                    <Select
-                                        labelId="language-label"
-                                        value={preferredLanguage}
-                                        label="Preferred Language"
-                                        onChange={(e) => setPreferredLanguage(e.target.value)}
-                                    >
-                                        {languages.map((lang) => (
-                                            <MenuItem key={lang} value={lang}>{lang}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                            </Box>
-                            <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
-                                <FormControl fullWidth>
-                                    <InputLabel id="experience-label">Years of Experience</InputLabel>
-                                    <Select
-                                        labelId="experience-label"
-                                        value={yearsExperience}
-                                        label="Years of Experience"
-                                        onChange={(e) => setYearsExperience(e.target.value)}
-                                    >
-                                        {yearsOfExperienceOptions.map((year) => (
-                                            <MenuItem key={year} value={year}>{year}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                            </Box>
-                            {/* Certifications field removed */}
-                            <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
-                                <FormControl fullWidth>
-                                    <InputLabel id="role-label">Role/Specialization</InputLabel>
-                                    <Select
-                                        labelId="role-label"
-                                        value={roleSpecialization}
-                                        label="Role/Specialization"
-                                        onChange={(e) => setRoleSpecialization(e.target.value)}
-                                    >
-                                        {roles.map((role) => (
-                                            <MenuItem key={role} value={role}>{role}</MenuItem>
-                                        ))}
+                                    <Select labelId="language-label" value={preferredLanguage} label="Preferred Language" onChange={(e) => setPreferredLanguage(e.target.value)}>
+                                        {languages.map((lang) => (<MenuItem key={lang} value={lang}>{lang}</MenuItem>))}
                                     </Select>
                                 </FormControl>
                             </Box>
                         </Box>
+                        
+                        <Divider sx={{ my: 4 }} />
 
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{
-                                mt: 5,
-                                py: 1.8,
-                                borderRadius: 10,
-                                fontWeight: 'bold',
-                                fontSize: { xs: '1rem', sm: '1.1rem' },
-                                bgcolor: 'primary.main',
-                                color: 'primary.contrastText',
-                                boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.1)',
-                                '&:hover': {
-                                    bgcolor: 'primary.dark',
-                                    boxShadow: '0px 8px 20px rgba(0, 0, 0, 0.2)',
-                                },
-                            }}
-                            disabled={loading}
-                        >
+                        {/* Document Status Section */}
+                        <Typography variant="h5">Document Status (Required)</Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 2 }}>
+                             <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
+                                <TextField required fullWidth label="Health Checkup Valid Until" type="date" InputLabelProps={{ shrink: true }} value={healthCheckupValidUntil} onChange={(e) => setHealthCheckupValidUntil(e.target.value)} />
+                            </Box>
+                            <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
+                                <TextField required fullWidth label="Medical Fitness Certificate Valid Until" type="date" InputLabelProps={{ shrink: true }} value={medicalFitnessValidUntil} onChange={(e) => setMedicalFitnessValidUntil(e.target.value)} />
+                            </Box>
+                            <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
+                                <TextField required fullWidth label="Audiometry Report Valid Until" type="date" InputLabelProps={{ shrink: true }} value={audiometryValidUntil} onChange={(e) => setAudiometryValidUntil(e.target.value)} />
+                            </Box>
+                            <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
+                                <TextField required fullWidth label="Vision Test Report Valid Until" type="date" InputLabelProps={{ shrink: true }} value={visionValidUntil} onChange={(e) => setVisionValidUntil(e.target.value)} />
+                            </Box>
+                            <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: 'calc(50% - 12px)' } }}>
+                                <TextField required fullWidth label="Training Certifications Valid Until" type="date" InputLabelProps={{ shrink: true }} value={trainingCertValidUntil} onChange={(e) => setTrainingCertValidUntil(e.target.value)} />
+                            </Box>
+                        </Box>
+
+                        <Button type="submit" fullWidth variant="contained" sx={{ mt: 5, py: 1.8 }} disabled={loading}>
                             {loading ? <CircularProgress size={24} color="inherit" /> : 'Create Account'}
                         </Button>
                     </Box>

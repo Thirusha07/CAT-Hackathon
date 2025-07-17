@@ -1,6 +1,6 @@
-"use client"; // This component uses client-side hooks and interactivity
+"use client";
 
-import React, { useState, FormEvent } from 'react';
+import React, { useState } from 'react';
 import {
     Container,
     Box,
@@ -14,60 +14,61 @@ import {
     IconButton,
     createTheme,
     ThemeProvider,
-    CssBaseline // Import CssBaseline for consistent baseline styles
+    CssBaseline
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import ConstructionIcon from '@mui/icons-material/Construction'; // Importing a dummy MUI logo icon
+import ConstructionIcon from '@mui/icons-material/Construction';
+import axios from 'axios'; // Import axios
 
-// Define a custom theme for better aesthetics, matching a "Cat" industrial feel
+// Custom theme matching Caterpillar brand
 const theme = createTheme({
     palette: {
         primary: {
-            main: '#FFC72C', // Caterpillar Yellow
-            light: '#FFD966', // Lighter yellow for subtle accents
-            dark: '#E0B000', // Darker yellow for hover
-            contrastText: '#1A1A1A', // Dark text for yellow background
+            main: '#FFC72C',
+            light: '#FFD966',
+            dark: '#E0B000',
+            contrastText: '#1A1A1A',
         },
         secondary: {
-            main: '#4A4A4A', // Dark gray for accents
+            main: '#4A4A4A',
             light: '#666666',
             dark: '#333333',
             contrastText: '#FFFFFF',
         },
         background: {
-            default: '#F0F2F5', // Light gray background for the overall page
-            paper: '#FFFFFF', // White for cards/forms
+            default: '#F0F2F5',
+            paper: '#FFFFFF',
         },
         text: {
-            primary: '#1A1A1A', // Dark text for main content
-            secondary: '#555555', // Lighter text for secondary info
+            primary: '#1A1A1A',
+            secondary: '#555555',
         },
         error: {
-            main: '#D32F2F', // Standard error red
+            main: '#D32F2F',
         },
     },
     typography: {
-        fontFamily: 'Inter, sans-serif', // Ensure Inter font is used
+        fontFamily: 'Inter, sans-serif',
         h5: {
-            fontWeight: 700, // Bold for headings
-            color: '#1A1A1A', // Ensure heading text is dark
+            fontWeight: 700,
+            color: '#1A1A1A',
         },
         button: {
-            textTransform: 'none', // Prevent uppercase transformation for buttons
-            fontWeight: 600, // Slightly bolder button text
+            textTransform: 'none',
+            fontWeight: 600,
         },
         body2: {
-            color: '#555555', // Default color for links and small text
+            color: '#555555',
         }
     },
     components: {
         MuiButton: {
             styleOverrides: {
                 root: {
-                    borderRadius: 10, // More rounded buttons
+                    borderRadius: 10,
                     transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
                     '&:active': {
-                        transform: 'scale(0.98)', // Slight press effect
+                        transform: 'scale(0.98)',
                     },
                 },
             },
@@ -76,23 +77,23 @@ const theme = createTheme({
             styleOverrides: {
                 root: {
                     '& .MuiOutlinedInput-root': {
-                        borderRadius: 10, // More rounded input fields
+                        borderRadius: 10,
                         '& fieldset': {
-                            borderColor: '#CCCCCC', // Lighter border color
+                            borderColor: '#CCCCCC',
                         },
                         '&:hover fieldset': {
-                            borderColor: '#999999', // Darker on hover
+                            borderColor: '#999999',
                         },
                         '&.Mui-focused fieldset': {
-                            borderColor: '#FFC72C', // Primary color on focus
-                            borderWidth: '2px', // Thicker border on focus
+                            borderColor: '#FFC72C',
+                            borderWidth: '2px',
                         },
                     },
                     '& .MuiInputLabel-root': {
-                        color: '#555555', // Label color
+                        color: '#555555',
                     },
                     '& .MuiInputLabel-root.Mui-focused': {
-                        color: '#FFC72C', // Label color on focus
+                        color: '#FFC72C',
                     },
                 },
             },
@@ -100,19 +101,19 @@ const theme = createTheme({
         MuiAlert: {
             styleOverrides: {
                 root: {
-                    borderRadius: 8, // Rounded alerts
-                    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)', // Subtle shadow for alerts
+                    borderRadius: 8,
+                    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
                 },
             },
         },
         MuiLink: {
             styleOverrides: {
                 root: {
-                    color: '#555555', // Default link color
-                    textDecoration: 'none', // No underline by default
+                    color: '#555555',
+                    textDecoration: 'none',
                     '&:hover': {
-                        textDecoration: 'underline', // Underline on hover
-                        color: '#333333', // Darker text on hover
+                        textDecoration: 'underline',
+                        color: '#333333',
                     },
                 },
             },
@@ -120,63 +121,58 @@ const theme = createTheme({
     }
 });
 
-// Mock login function for demonstration purposes
-interface LoginResponse {
-    success: boolean;
-    message: string;
-}
-
-const mockLogin = async (email: string, password: string): Promise<LoginResponse> => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            if (email === 'operator@cat.com' && password === 'password123') {
-                resolve({ success: true, message: 'Login successful!' });
-            } else {
-                reject({ success: false, message: 'Invalid email or password.' });
-            }
-        }, 1500); // Simulate network delay
-    });
-};
-
 export default function LoginPage() {
-    const [email, setEmail] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string>('');
-    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
-    const handleLogin = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+    const handleLogin = async (event) => {
         event.preventDefault();
-        setError(''); // Clear previous errors
+        setError('');
         setLoading(true);
 
         try {
-            const response = await mockLogin(email, password);
-            if (response.success) {
-                console.log(response.message);
+            // Replace with your actual backend login endpoint
+            const response = await axios.post('/api/login', {
+                email,
+                password,
+            });
+
+            if (response.status === 200) { // Assuming 200 OK for successful login
+                console.log(response.data.message); // Log success message from backend
+                // You might receive a token here, store it (e.g., in localStorage or a state management solution)
+                // localStorage.setItem('authToken', response.data.token);
                 alert('Login successful! Redirecting to Dashboard (simulated).');
+                // Redirect user to dashboard or another protected page
+                // router.push('/dashboard'); // If using Next.js router
             } else {
-                setError(response.message);
+                // This block might not be strictly necessary if axios throws errors for non-2xx responses
+                setError(response.data.message || 'Login failed. Please try again.');
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error("Login error:", err);
-            setError(err.message || 'An unexpected error occurred during login.');
+            if (axios.isAxiosError(err) && err.response) {
+                // Handle errors from the backend (e.g., 401 Unauthorized, 400 Bad Request)
+                setError(err.response.data.message || 'Invalid email or password.');
+            } else {
+                setError('An unexpected error occurred during login.');
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    const handleClickShowPassword = (): void => setShowPassword((show) => !show);
+    const handleClickShowPassword = () => setShowPassword((show) => !show);
 
-    const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>): void => {
+    const handleMouseDownPassword = (event) => {
         event.preventDefault();
     };
 
     return (
-        // ThemeProvider and CssBaseline should ideally wrap your entire app in layout.tsx
-        // For demonstration purposes, they are included here to show the styling.
         <ThemeProvider theme={theme}>
-            <CssBaseline /> {/* Applies global reset and theme background color */}
+            <CssBaseline />
             <Container
                 component="main"
                 maxWidth="xs"
@@ -187,10 +183,7 @@ export default function LoginPage() {
                     justifyContent: 'center',
                     minHeight: '100vh',
                     padding: { xs: 2, sm: 3, md: 4 },
-                    // Lighter, more inviting background gradient
-                    background: 'linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%)', // Light blue-gray gradient
-                    // Or a gradient with a hint of the primary color:
-                    // background: 'linear-gradient(135deg, #F0F2F5 0%, #FFFAE0 100%)', // Light gray to light yellow
+                    background: 'linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%)',
                 }}
             >
                 <Box
@@ -201,11 +194,10 @@ export default function LoginPage() {
                         width: '100%',
                         p: { xs: 3, sm: 4, md: 5 },
                         borderRadius: 3,
-                        boxShadow: '0px 15px 40px rgba(0, 0, 0, 0.15)', // More pronounced, softer shadow
-                        bgcolor: 'background.paper', // White background for the form card
+                        boxShadow: '0px 15px 40px rgba(0, 0, 0, 0.15)',
+                        bgcolor: 'background.paper',
                     }}
                 >
-                    {/* Logo */}
                     <Box sx={{ mb: 3 }}>
                         <ConstructionIcon sx={{ fontSize: 100, color: 'primary.main' }} />
                     </Box>
@@ -275,10 +267,10 @@ export default function LoginPage() {
                                 fontSize: { xs: '1rem', sm: '1.1rem' },
                                 bgcolor: 'primary.main',
                                 color: 'primary.contrastText',
-                                boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.1)', // Initial shadow
+                                boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.1)',
                                 '&:hover': {
                                     bgcolor: 'primary.dark',
-                                    boxShadow: '0px 8px 20px rgba(0, 0, 0, 0.2)', // More shadow on hover
+                                    boxShadow: '0px 8px 20px rgba(0, 0, 0, 0.2)',
                                 },
                             }}
                             disabled={loading}
