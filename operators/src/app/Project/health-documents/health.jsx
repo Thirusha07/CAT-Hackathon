@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-    Box,
+    Box, AppBar ,Toolbar ,
     Typography,
     TextField,
     Button,
@@ -153,7 +153,19 @@ export default function OperatorHealthAndDocuments() {
 
     return (
         <ThemeProvider theme={theme}>
-            <CssBaseline />
+            <CssBaseline /> <AppBar position="static" color="primary" enableColorOnDark>
+  <Toolbar sx={{ justifyContent: 'space-between' }}>
+    <Typography variant="h6" component="div">
+      Caterpillar Training Hub
+    </Typography>
+    <Box>
+      <Button color="inherit" href="/Project/health-documents">Health Docs</Button>
+      <Button color="inherit" href="/Project/daily-task">Daily Task</Button>
+      <Button color="inherit" href="/Project/operator-profile">Operator Profile</Button>
+      <Button color="inherit" href="/Project/login">Login</Button>
+      <Button color="inherit" href="/Project/signup">Signup</Button>
+    </Box>
+  </Toolbar>
             <Paper sx={{ p: { xs: 3, sm: 4, md: 5 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <HealthAndSafetyIcon sx={{ fontSize: 32, color: 'primary.main', mr: 1.5 }} />
@@ -231,7 +243,7 @@ export default function OperatorHealthAndDocuments() {
                     </Box>
                     {/* Removed the Button for simulating document upload */}
                 </Box>
-            </Paper>
+            </Paper></AppBar>
         </ThemeProvider>
     );
 }
