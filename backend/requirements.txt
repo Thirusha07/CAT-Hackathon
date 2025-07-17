@@ -1,0 +1,7 @@
+# python_backend/requirements.txt
+Flask
+scikit-learn
+joblib
+pandas
+numpy
+Flask-Cors
