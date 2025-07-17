@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const URI = 'mongodb+srv://21pw39:KLT4FLQyxfHGurWd@cat.p3vbxlh.mongodb.net/';
+const URI = 'mongodb+srv://21pw39:KLT4FLQyxfHGurWd@cat.p3vbxlh.mongodb.net/Hackathon?retryWrites=true&w=majority';
 console.log("Hello")
 
 const connectDB = async () => {
