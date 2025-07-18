@@ -248,10 +248,9 @@ export default function TrainingHubPage() {
     const [loadingAlertRecommendations, setLoadingAlertRecommendations] = useState(false);
     const [alertRecommendationsError, setAlertRecommendationsError] = useState(null);
 
-    // Fetch alert recommendations from API
-    // ... (previous code)
+    // ... (rest of your component code) ...
 
-// Fetch alert recommendations from API
+// Fetch specific alert recommendations from API based on selectedAlert
 useEffect(() => {
   const fetchAlertRecommendations = async () => {
     if (!selectedAlert) {
@@ -263,10 +262,10 @@ useEffect(() => {
     setAlertRecommendationsError(null);
 
     try {
-      const alertType = selectedAlert.toLowerCase(); // e.g., "cpu", "network"
-      const response = await axios.get(
-        `/api/traings/videos?alert_type=${encodeURIComponent(alertType)}`
-      );
+      // --- THIS IS THE CRITICAL LINE TO CHECK AND CORRECT ---
+     const response = await axios.get(
+  `/api/traings/videos?alert_type=${encodeURIComponent(selectedAlert)}`
+);
 
       if (response.data && Array.isArray(response.data.trainingModules)) {
         setFetchedAlertRecommendations(response.data.trainingModules);
@@ -284,6 +283,12 @@ useEffect(() => {
 
   fetchAlertRecommendations();
 }, [selectedAlert]);
+
+// ... (rest of your component code) ...
+
+
+
+
 
     const handleAlertChange = (event) => { 
         setSelectedAlert(event.target.value); 

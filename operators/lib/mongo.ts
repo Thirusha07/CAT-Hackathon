@@ -1,7 +1,7 @@
 // lib/connectDB.ts
 import mongoose from "mongoose";
 
-const URI = 'mongodb+srv://21pw39:KLT4FLQyxfHGurWd@cat.p3vbxlh.mongodb.net/Hackathon?retryWrites=true&w=majority';
+const URI = 'mongodb+srv://21pw39:KLT4FLQyxfHGurWd@cat.p3vbxlh.mongodb.net/?retryWrites=true&w=majority';
 
 const connectDB = async () => {
   if (mongoose.connection.readyState >= 1) {
@@ -15,6 +15,7 @@ const connectDB = async () => {
         await mongoose.connect(URI,{
   dbName: "Hackathon",
 });
+ console.log("Connected DB name:", mongoose.connection.name);
         console.log("Connected to MongoDB");
     } catch (error) {
         console.error("Error connecting to database:", error);
