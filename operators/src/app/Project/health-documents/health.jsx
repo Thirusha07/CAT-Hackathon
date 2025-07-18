@@ -221,10 +221,11 @@ export default function OperatorHealthAndDocuments() {
                 </Typography>
                 <Box>
                   <Button color="inherit" href="/Project/health-documents">Health Docs</Button>
-                  <Button color="inherit" href="/Project/daily-task">Daily Task</Button>
+                  <Button color="inherit" href="/Project/daily-task">Daily Task</Button><Button color="inherit" href="/Project/training-hub">Operator Training Hub</Button>
+                  
                   <Button color="inherit" href="/Project/operator-profile">Operator Profile</Button>
                   <Button color="inherit" href="/Project/login">Login</Button>
-                  <Button color="inherit" href="/Project/signup">Signup</Button>
+                  <Button color="inherit" href="/Project/signup">Signup</Button>              
                 </Box>
               </Toolbar><Container 
                 component="main" 

@@ -145,7 +145,7 @@ export default function LoginPage() {
 
             if (response.status === 200) { // Assuming 200 OK for successful login
                  console.log(response.data.message);
-                 localStorage.setItem('userName', response.data.user.fullName);
+                //  localStorage.setItem('userName', response.data.user.fullName);
     router.push('/Project/daily-task');
             } else {
                 // This block might not be strictly necessary if axios throws errors for non-2xx responses
