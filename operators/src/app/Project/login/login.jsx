@@ -16,6 +16,7 @@ import {
     ThemeProvider,
     CssBaseline
 } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import axios from 'axios'; // Import axios
@@ -122,6 +123,8 @@ const theme = createTheme({
 });
 
 export default function LoginPage() {
+    const router = useRouter();
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -141,12 +144,9 @@ export default function LoginPage() {
             });
 
             if (response.status === 200) { // Assuming 200 OK for successful login
-                console.log(response.data.message); // Log success message from backend
-                // You might receive a token here, store it (e.g., in localStorage or a state management solution)
-                // localStorage.setItem('authToken', response.data.token);
-                alert('Login successful! Redirecting to Dashboard (simulated).');
-                // Redirect user to dashboard or another protected page
-                // router.push('/dashboard'); // If using Next.js router
+                 console.log(response.data.message);
+                 localStorage.setItem('userName', response.data.user.fullName);
+    router.push('/Project/daily-task');
             } else {
                 // This block might not be strictly necessary if axios throws errors for non-2xx responses
                 setError(response.data.message || 'Login failed. Please try again.');

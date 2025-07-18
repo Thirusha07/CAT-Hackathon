@@ -1,7 +1,13 @@
-"use client"; // This component uses client-side hooks and interactivity 
+"use client"; // This component uses client-side hooks and interactivity
 
 import React, { useState } from 'react';
 import { ChevronsRight, Shovel, Shield, Fuel, Bell, Settings, Calendar, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 // Mock Data - In a real application, this would come from an API
 const operator = {
@@ -63,6 +69,161 @@ const safetyChecklistItems = [
 ];
 
 
+// MUI Theme Definition
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: '#FFC72C', // Caterpillar Yellow
+            light: '#FFD966',
+            dark: '#E0B000',
+            contrastText: '#1A1A1A',
+        },
+        secondary: {
+            main: '#4A4A4A',
+            light: '#666666',
+            dark: '#333333',
+            contrastText: '#FFFFFF',
+        },
+        background: {
+            default: '#F0F2F5',
+            paper: '#FFFFFF',
+        },
+        text: {
+            primary: '#1A1A1A',
+            secondary: '#555555',
+        },
+        error: {
+            main: '#D32F2F',
+        },
+        success: {
+            main: '#4CAF50',
+        },
+        info: {
+            main: '#2196F3',
+        },
+    },
+    typography: {
+        fontFamily: 'Inter, sans-serif',
+        h4: {
+            fontWeight: 700,
+            color: '#1A1A1A',
+        },
+        h5: {
+            fontWeight: 600,
+            color: '#1A1A1A',
+            marginBottom: '16px',
+        },
+        h6: {
+            fontWeight: 700, // Made it bolder to stand out on the yellow AppBar
+            color: '#1A1A1A',
+        },
+        body1: {
+            color: '#333333',
+        },
+        body2: {
+            color: '#555555',
+        },
+        button: {
+            textTransform: 'none',
+            fontWeight: 600,
+        },
+    },
+    components: {
+        MuiPaper: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 12,
+                    boxShadow: '0px 8px 25px rgba(0, 0, 0, 0.08)',
+                },
+            },
+        },
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 10,
+                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                    '&:active': {
+                        transform: 'scale(0.98)',
+                    },
+                },
+            },
+        },
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    '& .MuiOutlinedInput-root': {
+                        borderRadius: 10,
+                        '& fieldset': {
+                            borderColor: '#CCCCCC',
+                        },
+                        '&:hover fieldset': {
+                            borderColor: '#999999',
+                        },
+                        '&.Mui-focused fieldset': {
+                            borderColor: '#FFC72C',
+                            borderWidth: '2px',
+                        },
+                    },
+                    '& .MuiInputLabel-root': {
+                        color: '#555555',
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#FFC72C',
+                    },
+                },
+            },
+        },
+        MuiAccordion: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 8,
+                    boxShadow: 'none',
+                    border: '1px solid #E0E0E0',
+                    '&:before': {
+                        display: 'none',
+                    },
+                    '&.Mui-expanded': {
+                        margin: 'auto',
+                    },
+                },
+            },
+        },
+        MuiAccordionSummary: {
+            styleOverrides: {
+                root: {
+                    borderRadius: '8px 8px 0 0',
+                    backgroundColor: '#FAFAFA',
+                    '&.Mui-expanded': {
+                        minHeight: 48,
+                    },
+                },
+                content: {
+                    '&.Mui-expanded': {
+                        margin: '12px 0',
+                    },
+                },
+            },
+        },
+        MuiAccordionDetails: {
+            styleOverrides: {
+                root: {
+                    padding: '16px',
+                    borderTop: '1px solid #E0E0E0',
+                },
+            },
+        },
+        MuiChip: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 8,
+                    fontWeight: 500,
+                },
+            },
+        },
+    }
+});
+
+
 // Main Application Component
 export default function App() {
   const [activeView, setActiveView] = useState('dashboard');
@@ -81,14 +242,36 @@ export default function App() {
   };
 
   return (
-    <div className="bg-gray-800 text-white font-sans flex w-full h-screen">
-      <Sidebar activeView={activeView} setActiveView={setActiveView} />
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto bg-gray-100">
-        {renderView()}
-      </main>
-    </div>
+    <ThemeProvider theme={theme}>
+      <div className="h-screen w-full flex flex-col bg-gray-100">
+        {/* Top App Bar */}
+        <AppBar position="static" color="primary">
+          <Toolbar sx={{ justifyContent: 'space-between' }}>
+            <Typography variant="h6" component="div">
+              Smart Operator
+            </Typography>
+            <Box>
+              <Button color="inherit" href="/Project/health-documents">Health Docs</Button>
+              <Button color="inherit" href="/Project/daily-task">Daily Task</Button>
+              <Button color="inherit" href="/Project/operator-profile">Operator Profile</Button>
+              <Button color="inherit" href="/Project/login">Login</Button>
+              <Button color="inherit" href="/Project/signup">Signup</Button>
+            </Box>
+          </Toolbar>
+        </AppBar>
+
+        {/* Main App Layout */}
+        <div className="flex flex-1 w-full overflow-hidden">
+          <Sidebar activeView={activeView} setActiveView={setActiveView} />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto" style={{backgroundColor: theme.palette.background.default}}>
+            {renderView()}
+          </main>
+        </div>
+      </div>
+    </ThemeProvider>
   );
 }
+
 
 // 1. Sidebar Navigation Component
 const Sidebar = ({ activeView, setActiveView }) => {
@@ -105,7 +288,7 @@ const Sidebar = ({ activeView, setActiveView }) => {
       <div>
         {/* CAT Logo Placeholder */}
         <div className="bg-yellow-400 w-16 h-16 flex items-center justify-center rounded-lg mb-10">
-          <p className="text-black font-bold text-4xl">CAT</p>
+          <p className="text-black font-bold text-4xl">O</p>
         </div>
         
         {/* Navigation Items */}
@@ -208,7 +391,7 @@ const StatCard = ({ title, value, icon: Icon, color, action }) => {
         blue: 'from-blue-500 to-blue-600',
         red: 'from-red-500 to-red-600'
     };
-    const buttonClass = action ? 'cursor-pointer' : '';
+    const buttonClass = action ? 'cursor-pointer hover:scale-105 transform transition-transform duration-200' : '';
 
     return (
         <div className={`bg-gradient-to-br ${colorClasses[color]} text-white p-6 rounded-xl shadow-lg ${buttonClass}`} onClick={action}>
@@ -281,14 +464,16 @@ const MachineHealth = () => {
 // Reusable Gauge Component
 const Gauge = ({ title, value, unit }) => {
   const percentage = Math.min(Math.max(value, 0), 100);
-  const circumference = 2 * Math.PI * 45;
+  const circumference = 2 * Math.PI * 45; // Corresponds to r="45"
   const offset = circumference - (percentage / 100) * circumference;
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
       <div className="relative w-32 h-32">
         <svg className="w-full h-full" viewBox="0 0 100 100">
+          {/* Background circle */}
           <circle className="text-gray-200" strokeWidth="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+          {/* Foreground circle */}
           <circle
             className="text-yellow-400"
             strokeWidth="10"
