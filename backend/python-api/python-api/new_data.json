@@ -1,0 +1,32 @@
+[
+  {
+    "Timestamp": "2025-05-10 10:00:00",
+    "Machine ID": "EXC001",
+    "Operator ID": "OP1001",
+    "Engine Hours": 180.5,
+    "Fuel Used (L)": 5.5,
+    "Load Cycles": 12,
+    "Idle Time (min)": 8,
+    "Seatbelt Status": "Fastened",
+    "Safety Triggered": "No",
+    "Task Type": "Excavation",
+    "Task Start Time": "2025-05-10 09:45:00",
+    "Task End Time": "2025-05-10 10:30:00",
+    "Weather": "Sunny"
+  },
+  {
+    "Timestamp": "2025-05-10 11:00:00",
+    "Machine ID": "EXC001",
+    "Operator ID": "OP1001",
+    "Engine Hours": 181.0,
+    "Fuel Used (L)": 2.0,
+    "Load Cycles": 0,
+    "Idle Time (min)": 60,
+    "Seatbelt Status": "Unfastened",
+    "Safety Triggered": "Yes",
+    "Task Type": "Maintenance",
+    "Task Start Time": "2025-05-10 10:55:00",
+    "Task End Time": "2025-05-10 11:55:00",
+    "Weather": "Sunny"
+  }
+]
