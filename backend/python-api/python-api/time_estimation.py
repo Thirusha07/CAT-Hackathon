@@ -69,7 +69,7 @@ def generate_popup_message(travel_time_minutes, distance, next_task_start_time_s
     return message
 
 # --- Main execution block ---
-if _name_ == "_main_":
+if __name__ == "__main__":
     print("System is running. Monitoring schedule for next task...")
 
     travel_time, distance = get_travel_time(API_KEY, current_task_location, next_task["location"])

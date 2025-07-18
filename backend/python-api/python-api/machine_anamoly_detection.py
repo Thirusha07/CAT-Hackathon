@@ -97,5 +97,5 @@ def run_full_analysis(training_data_path='data.json', new_data_path='new_data.js
         print(f"Details: Operator {record['Operator ID']}, Machine {record['Machine ID']}, Task {record['Task Type']}")
 
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     run_full_analysis()
